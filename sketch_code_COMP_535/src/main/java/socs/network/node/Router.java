@@ -8,12 +8,12 @@ import java.io.InputStreamReader;
 
 public class Router {
 
-  protected LinkStateDatabase lsd;
+  protected LinkStateDatabase lsd; //
 
   RouterDescription rd = new RouterDescription();
 
   //assuming that all routers are with 4 ports
-  Link[] ports = new Link[4];
+  Link[] ports = new Link[4]; //ports available to curreent router
 
   public Router(Configuration config) {
     rd.simulatedIPAddress = config.getString("socs.network.router.ip");
@@ -50,14 +50,37 @@ public class Router {
    */
   private void processAttach(String processIP, short processPort,
                              String simulatedIP, short weight) {
+    //Create a router description
+    RouterDescription attach = new RouterDescription();
+    attach.processIPAddress = processIP;
+    attach.processPortNumber = processPort;
+    attach.simulatedIPAddress = simulatedIP;
+    attach.status = RouterStatus.INIT; //Unsure?
+    //Link to current router:
+    Link link = new Link(rd,attach);
 
+    //We need to add this to the ports we connect to.
+    for(int i=0;i<4;i++){
+      if(ports[i] != null){
+        ports[i] = link;
+      }
+    }
   }
 
   /**
    * broadcast Hello to neighbors
    */
   private void processStart() {
-
+    // Router 1 (R1) broadcasts Hello through all ports
+    // Run LSAUPDATE
+    // LSAs are used to advertise networks
+    // to which the advertising router is connected,
+    // while other types are used to support additional
+    // hierarchy
+    for (int i = 0; i<4; i++ ){
+      Link link = ports[i];
+      //Send message using socket
+    }
   }
 
   /**

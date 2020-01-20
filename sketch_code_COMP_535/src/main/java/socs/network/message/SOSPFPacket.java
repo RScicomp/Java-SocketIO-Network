@@ -3,7 +3,7 @@ package socs.network.message;
 import java.io.*;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
-
+//This is what we send HELLO messages through
 public class SOSPFPacket implements Serializable {
 
   //for inter-process communication
