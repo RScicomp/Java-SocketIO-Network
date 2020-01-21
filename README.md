@@ -1,8 +1,8 @@
 # Networks_Assignments
-Required: Maven.
+
 In order to set JAVA_HOME :
 
-open -e .bash_profile
+open -e .bash_profile and fill in the following with your path
 
 #Maven
 export M2_HOME=/Users/{User}/apache-maven-3.6.3 
