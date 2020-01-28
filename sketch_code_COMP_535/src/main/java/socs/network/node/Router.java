@@ -5,6 +5,8 @@ import socs.network.util.Configuration;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 
 public class Router {
 
@@ -13,7 +15,7 @@ public class Router {
   RouterDescription rd = new RouterDescription();
 
   //assuming that all routers are with 4 ports
-  Link[] ports = new Link[4]; //ports available to curreent router
+  Link[] ports = new Link[4]; //ports available to current router
 
   public Router(Configuration config) {
     rd.simulatedIPAddress = config.getString("socs.network.router.ip");
@@ -55,7 +57,8 @@ public class Router {
     attach.processIPAddress = processIP;
     attach.processPortNumber = processPort;
     attach.simulatedIPAddress = simulatedIP;
-    attach.status = RouterStatus.INIT; //Unsure?
+    attach.status = null; //Unsure?
+
     //Link to current router:
     Link link = new Link(rd,attach);
 
@@ -65,6 +68,7 @@ public class Router {
         ports[i] = link;
       }
     }
+
   }
 
   /**
@@ -77,8 +81,50 @@ public class Router {
     // to which the advertising router is connected,
     // while other types are used to support additional
     // hierarchy
+    
+    //RG Code
+    //Server Socket initialization
+    //ServerSocket serverSocket = new ServerSocket(rd.processPortNumber);
+
     for (int i = 0; i<4; i++ ){
       Link link = ports[i];
+      System.out.println("SocketServer Example");
+      ServerSocket server = null;
+      try {
+        server = new ServerSocket(link.router1.processPortNumber);
+
+        while (true) {
+          /**
+           * create a new {@link SocketServer} object for each connection
+           * this will allow multiple client connections
+           */
+          
+          Socket server = new SocketServer(server.accept());
+          System.out.println("Just connected to " + server.getRemoteSocketAddress());
+          DataInputStream in = new DataInputStream(server.getInputStream());
+          System.out.println(in.readUTF());
+          if (in.readUTF().equals("HELLO")){
+            break;
+          }
+        }
+      } catch (IOException ex) {
+        System.out.println("Unable to start server.");
+      } finally {
+        try {
+          if (server != null)
+            server.close();
+        } catch (IOException ex) {
+          ex.printStackTrace();
+        }
+      }
+      //use our port number to send
+      //Socket client = new Socket("Sender", rd.processPortNumber);
+
+
+
+      //set up client and send hello back
+
+      
       //Send message using socket
     }
   }
