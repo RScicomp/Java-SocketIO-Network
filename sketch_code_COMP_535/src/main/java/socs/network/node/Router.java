@@ -69,7 +69,7 @@ public class Router {
 
     //We need to add this to the ports we connect to.
     for(int i=0;i<4;i++){
-      if(ports[i] != null){
+      if(ports[i] == null){
         ports[i] = link;
       }
     }
@@ -93,56 +93,11 @@ public class Router {
 
     for (int i = 0; i<4; i++ ){
       Link link = ports[i];
-      System.out.println("SocketServer Example");
-      ServerSocket server = null;
-      try {
-        server = new ServerSocket(link.router1.processPortNumber);
-
-        while (true) {
-          Socket s = null; 
-          /**
-           * create a new {@link SocketServer} object for each connection
-           * this will allow multiple client connections
-           */
-          /*
-          Thread t1 = new Thread(new RunnableDemo().new RunnableImpl()); 
-          t1.start(); 
-          Socket server = new SocketServer(server.accept());
-          System.out.println("Just connected to " + server.getRemoteSocketAddress());
-          DataInputStream in = new DataInputStream(server.getInputStream());
-          System.out.println(in.readUTF());
-          if (in.readUTF().equals("HELLO")){
-            break;
-          }*/
-          try{
-          s = server.accept(); 
-          System.out.println("A new client is connected : " + s); 
-            
-          // obtaining input and out streams 
-          DataInputStream dis = new DataInputStream(s.getInputStream()); 
-          //Recieve HELLO
-          DataOutputStream dos = new DataOutputStream(s.getOutputStream()); 
-          //Send HELLO
-          System.out.println("Assigning new thread for this client"); 
-          // create a new thread object 
-          serverHandler t = new serverHandler(link); 
-          // Invoking the start() method 
-          t.run(); 
-          }
-          catch (Exception e){ 
-            s.close(); 
-            e.printStackTrace(); 
-          } 
-        }
-      } catch (IOException ex) {
-        System.out.println("Unable to start server.");
-      } finally {
-        try {
-          if (server != null)
-            server.close();
-        } catch (IOException ex) {
-          ex.printStackTrace();
-        }
+      System.out.println(link);
+      if(link != null){
+        System.out.println(link);
+        ServerHandler handler = new ServerHandler(link);
+        handler.run();
       }
       //use our port number to send
       //Socket client = new Socket("Sender", rd.processPortNumber);
