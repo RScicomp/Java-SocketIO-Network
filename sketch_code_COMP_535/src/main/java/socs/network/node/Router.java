@@ -96,8 +96,12 @@ public class Router {
       System.out.println(link);
       if(link != null){
         System.out.println(link);
-        ServerHandler handler = new ServerHandler(link);
-        handler.run();
+        try{
+          Socket client = new Socket(link.router2.processIPAddress,link.router2.processPortNumber);
+          System.out.println("Just connected to" + client.getRemoteSocketAddress());
+        }catch(Exception e){
+          System.out.println("Failed");
+        }
       }
       //use our port number to send
       //Socket client = new Socket("Sender", rd.processPortNumber);
@@ -141,6 +145,11 @@ public class Router {
     try {
       InputStreamReader isReader = new InputStreamReader(System.in);
       BufferedReader br = new BufferedReader(isReader);
+      //thread server listening to incoming connections.
+      Runnable handler = new ServerHandler(rd);
+      //handle incoming connection requests
+      Thread t1 = new Thread(handler);
+
       System.out.print(">> ");
       String command = br.readLine();
       while (true) {
@@ -172,6 +181,7 @@ public class Router {
         System.out.print(">> ");
         command = br.readLine();
       }
+      t1.start();
       isReader.close();
       br.close();
     } catch (Exception e) {
