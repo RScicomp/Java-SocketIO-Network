@@ -93,12 +93,14 @@ public class Router {
 
     for (int i = 0; i<4; i++ ){
       Link link = ports[i];
-      System.out.println(link);
       if(link != null){
-        System.out.println(link);
         try{
-          Socket client = new Socket(link.router2.processIPAddress,link.router2.processPortNumber);
-          System.out.println("Just connected to" + client.getRemoteSocketAddress());
+
+          Runnable client = new ClientHandler(link.router2);
+          Thread t2 = new Thread(client);
+          //client.run();
+          t2.start();
+          //System.out.println("Just connected to" + client.getRemoteSocketAddress());
         }catch(Exception e){
           System.out.println("Failed");
         }
@@ -146,10 +148,12 @@ public class Router {
       InputStreamReader isReader = new InputStreamReader(System.in);
       BufferedReader br = new BufferedReader(isReader);
       //thread server listening to incoming connections.
+      //handle incoming connection requests
       Runnable handler = new ServerHandler(rd);
       //handle incoming connection requests
       Thread t1 = new Thread(handler);
-
+      t1.start();
+      
       System.out.print(">> ");
       String command = br.readLine();
       while (true) {
@@ -181,9 +185,9 @@ public class Router {
         System.out.print(">> ");
         command = br.readLine();
       }
-      t1.start();
       isReader.close();
       br.close();
+      
     } catch (Exception e) {
       e.printStackTrace();
     }

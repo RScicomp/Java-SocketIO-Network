@@ -8,4 +8,5 @@ socs/network/node/Router.class
 socs/network/util/Configuration.class
 socs/network/message/LSA.class
 socs/network/node/Link.class
+socs/network/node/ClientHandler.class
 socs/network/node/RouterStatus.class
