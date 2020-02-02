@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -26,7 +27,18 @@ public class Router {
 
   public Router(Configuration config) {
     rd.simulatedIPAddress = config.getString("socs.network.router.ip");
+    rd.processIPAddress = "127.0.0.1";
+    rd.processPortNumber = 5000;
+    rd.status = null;
+
+    System.out.println(rd.processPortNumber);
     lsd = new LinkStateDatabase(rd);
+
+    //thread server listening to incoming connections.
+    ServerHandler handler = new ServerHandler(rd);
+    Thread t1 = new Thread(handler);
+    //handle incoming connection requests
+    t1.start();
   }
 
   /**
@@ -67,12 +79,13 @@ public class Router {
     attach.status = null; //Unsure?
 
     //Link to current router:
-    Link link = new Link(rd,attach);
+    Link link = new Link(this.rd, attach);
 
     //We need to add this to the ports we connect to.
     for(int i=0;i<4;i++){
       if(ports[i] == null){
         ports[i] = link;
+        break;
       }
     }
 
@@ -94,15 +107,33 @@ public class Router {
     //ServerSocket serverSocket = new ServerSocket(rd.processPortNumber);
 
     for (int i = 0; i<4; i++ ){
+
       Link link = ports[i];
-      System.out.println(link);
+      
       if(link != null){
-        System.out.println(link);
         try{
-          Socket client = new Socket(link.router2.processIPAddress,link.router2.processPortNumber);
-          System.out.println("Just connected to" + client.getRemoteSocketAddress());
+
+
+          Socket client = new Socket(this.rd.processIPAddress, this.rd.processPortNumber);
+          System.out.println("Just connected");
+          OutputStream outToServer = client.getOutputStream();
+          DataOutputStream out = new DataOutputStream(outToServer);
+
+          //Send hello to server **It is connecting to its own server, in server handler need to check the simulatedIpAddress is the same as the one in the link*
+          out.writeUTF("Hello from " + client.getLocalSocketAddress());
+          
+          //recieve hello from server
+          InputStream inFromServer = client.getInputStream();
+          DataInputStream in = new DataInputStream(inFromServer);
+          System.out.println(in.readUTF());
+
+          //set server tp INIT
+
+          //send hello to server
+          out.writeUTF("Hello from " + client.getLocalSocketAddress());
+
         }catch(Exception e){
-          System.out.println("Failed");
+          e.printStackTrace();
         }
       }
       //use our port number to send
@@ -147,13 +178,7 @@ public class Router {
     try {
       InputStreamReader isReader = new InputStreamReader(System.in);
       BufferedReader br = new BufferedReader(isReader);
-      //thread server listening to incoming connections.
-      ServerHandler handler = new ServerHandler(rd);
-      Thread t1 = new Thread(handler);
-      //handle incoming connection requests
-      t1.start();
-
-
+      
       System.out.print(">> ");
       String command = br.readLine();
       while (true) {  

@@ -8,31 +8,30 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 
 public class ServerHandler implements Runnable {
-    //private RouterDescription cr;
-    private RouterDescription sr;
-    public ServerHandler(RouterDescription sr) {
-      this.sr = sr;
+    private RouterDescription rd;
+    public ServerHandler(RouterDescription rd) {
+      this.rd = rd;
     }
   
     public void run() {
-      //System.out.println("Starting: " + sr.simulatedIPAddress.toString());
       ServerSocket serverSocket;
 
       try {
-        serverSocket = new ServerSocket(this.sr.processPortNumber);
+        //System.out.println(rd.processPortNumber);
+        serverSocket = new ServerSocket(this.rd.processPortNumber);
       
         while(true){
           try{
-            //System.out.println("HELLO"); 
+            //System.out.println("HELLO");
+            //System.out.println(serverSocket.getLocalSocketAddress());
+            
             Socket server = serverSocket.accept();
+            System.out.println("HELLO");
             DataInputStream in = new DataInputStream(server.getInputStream());
-            System.out.println("recieved message " + in.readUTF() + "from ???");
+            System.out.println("recieved " + in.readUTF());
             // set cr state to INIT or to TWO-WAY
             DataOutputStream out = new DataOutputStream(server.getOutputStream());
-            out.writeUTF("HELLO");  
-
-            //serverSocket.close();
-            server.close();
+            out.writeUTF("HELLO from " + server.getLocalSocketAddress());  
 
           }catch(SocketTimeoutException s){
             System.out.println("Socket timed out!");
@@ -45,6 +44,8 @@ public class ServerHandler implements Runnable {
             break;
           }
         }
+        serverSocket.close();
+
       } catch (IOException e1) {
         e1.printStackTrace();
       }
