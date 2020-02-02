@@ -10,7 +10,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class Router {
 
@@ -18,8 +21,8 @@ public class Router {
 
   RouterDescription rd = new RouterDescription();
 
-  // assuming that all routers are with 4 ports
-  Link[] ports = new Link[4]; // ports available to curreent router
+  //assuming that all routers are with 4 ports
+  Link[] ports = new Link[4]; //ports available to current router
 
   public Router(Configuration config) {
     rd.simulatedIPAddress = config.getString("socs.network.router.ip");
@@ -29,7 +32,7 @@ public class Router {
   /**
    * output the shortest path to the given destination ip
    * <p/>
-   * format: source ip address -> ip address -> ... -> destination ip
+   * format: source ip address  -> ip address -> ... -> destination ip
    *
    * @param destinationIP the ip adderss of the destination simulated router
    */
@@ -48,71 +51,69 @@ public class Router {
   }
 
   /**
-   * attach the link to the remote router, which is identified by the given
-   * simulated ip; to establish the connection via socket, you need to indentify
-   * the process IP and process Port; additionally, weight is the cost to
-   * transmitting data through the link
+   * attach the link to the remote router, which is identified by the given simulated ip;
+   * to establish the connection via socket, you need to indentify the process IP and process Port;
+   * additionally, weight is the cost to transmitting data through the link
    * <p/>
    * NOTE: this command should not trigger link database synchronization
    */
-  private void processAttach(String processIP, short processPort, String simulatedIP, short weight) {
-    // Create a router description
+  private void processAttach(String processIP, short processPort,
+                             String simulatedIP, short weight) {
+    //Create a router description
     RouterDescription attach = new RouterDescription();
     attach.processIPAddress = processIP;
     attach.processPortNumber = processPort;
     attach.simulatedIPAddress = simulatedIP;
-    //attach.status = RouterStatus.INIT; // Unsure?
-    // Link to current router:
-    Link link = new Link(rd, attach);
+    attach.status = null; //Unsure?
 
-    // We need to add this to the ports we connect to.
-    for (int i = 0; i < 4; i++) {
-      if (ports[i] == null) {
+    //Link to current router:
+    Link link = new Link(rd,attach);
+
+    //We need to add this to the ports we connect to.
+    for(int i=0;i<4;i++){
+      if(ports[i] == null){
         ports[i] = link;
       }
     }
+
   }
 
   /**
    * broadcast Hello to neighbors
-   * 
-   * @throws IOException
-   * @throws UnknownHostException
    */
-  private void processStart() throws UnknownHostException, IOException {
+  private void processStart() {
     // Router 1 (R1) broadcasts Hello through all ports
     // Run LSAUPDATE
     // LSAs are used to advertise networks
     // to which the advertising router is connected,
     // while other types are used to support additional
-    // hierarchy
+    // hierarchys
+    
+    //RG Code
+    //Server Socket initialization
+    //ServerSocket serverSocket = new ServerSocket(rd.processPortNumber);
 
     for (int i = 0; i<4; i++ ){
       Link link = ports[i];
       System.out.println(link);
-      try{
-        Runnable server = new serverHandler(link);
-        Thread serverThread = new Thread(server);
-        serverThread.start();
-      }catch(Exception e){
-        e.printStackTrace();
+      if(link != null){
+        System.out.println(link);
+        try{
+          Socket client = new Socket(link.router2.processIPAddress,link.router2.processPortNumber);
+          System.out.println("Just connected to" + client.getRemoteSocketAddress());
+        }catch(Exception e){
+          System.out.println("Failed");
+        }
       }
+      //use our port number to send
+      //Socket client = new Socket("Sender", rd.processPortNumber);
+
+
+
+      //set up client and send hello back
+
       
-
-      //Client
-      System.out.println("Connecting to Router");
-      Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
-      System.out.println("Just connected to " + client.getRemoteSocketAddress());
-
-      OutputStream outToServer = client.getOutputStream();
-      DataOutputStream out = new DataOutputStream(outToServer);
-      out.writeUTF("HELLO");
-
-      InputStream inFromServer = client.getInputStream();
-      DataInputStream in = new DataInputStream(inFromServer);
-
-      System.out.println("recieved " + in.readUTF() + "from " + link.router2.simulatedIPAddress);
-      client.close();
+      //Send message using socket
     }
   }
 
@@ -146,9 +147,17 @@ public class Router {
     try {
       InputStreamReader isReader = new InputStreamReader(System.in);
       BufferedReader br = new BufferedReader(isReader);
+      //thread server listening to incoming connections.
+      ServerHandler handler = new ServerHandler(rd);
+      Thread t1 = new Thread(handler);
+      //handle incoming connection requests
+      t1.start();
+
+
       System.out.print(">> ");
       String command = br.readLine();
-      while (true) {
+      while (true) {  
+
         if (command.startsWith("detect ")) {
           String[] cmdLine = command.split(" ");
           processDetect(cmdLine[1]);
@@ -177,6 +186,7 @@ public class Router {
         System.out.print(">> ");
         command = br.readLine();
       }
+      
       isReader.close();
       br.close();
     } catch (Exception e) {
