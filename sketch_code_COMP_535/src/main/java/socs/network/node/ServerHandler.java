@@ -22,9 +22,9 @@ public class ServerHandler implements Runnable {
       
         while(true){
           try{
-            //System.out.println("HELLO");
-            //System.out.println(serverSocket.getLocalSocketAddress());
-            
+            // System.out.println("HELLO");
+            // System.out.println(serverSocket.getSocketAddress());
+
             Socket server = serverSocket.accept();
             System.out.println("HELLO");
             DataInputStream in = new DataInputStream(server.getInputStream());

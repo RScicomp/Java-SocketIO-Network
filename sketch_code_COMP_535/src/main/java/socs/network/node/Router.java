@@ -28,10 +28,9 @@ public class Router {
   public Router(Configuration config) {
     rd.simulatedIPAddress = config.getString("socs.network.router.ip");
     rd.processIPAddress = "127.0.0.1";
-    rd.processPortNumber = 5000;
+    rd.processPortNumber = config.getShort("socs.network.router.port");
     rd.status = null;
 
-    System.out.println(rd.processPortNumber);
     lsd = new LinkStateDatabase(rd);
 
     //thread server listening to incoming connections.
@@ -113,8 +112,10 @@ public class Router {
       if(link != null){
         try{
 
+          //System.out.println(link.router2.processIPAddress);
 
-          Socket client = new Socket(this.rd.processIPAddress, this.rd.processPortNumber);
+
+          Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
           System.out.println("Just connected");
           OutputStream outToServer = client.getOutputStream();
           DataOutputStream out = new DataOutputStream(outToServer);
@@ -131,6 +132,7 @@ public class Router {
 
           //send hello to server
           out.writeUTF("Hello from " + client.getLocalSocketAddress());
+          client.close();
 
         }catch(Exception e){
           e.printStackTrace();
