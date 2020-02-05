@@ -8,39 +8,53 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 
 public class ServerHandler implements Runnable {
-    //private RouterDescription cr;
-    private RouterDescription sr;
-    public ServerHandler(RouterDescription sr) {
-      this.sr = sr;
+    private RouterDescription rd;
+    public ServerHandler(RouterDescription rd) {
+      this.rd = rd;
     }
   
     public void run() {
-      //System.out.println("Starting: " + sr.simulatedIPAddress.toString());
-      while(true){
+      ServerSocket serverSocket;
 
-        try{
-          //System.out.println("HELLO");
-          ServerSocket serverSocket = new ServerSocket(sr.processPortNumber);
-          Socket server = serverSocket.accept();
-          DataInputStream in = new DataInputStream(server.getInputStream());
-          System.out.println("recieved message " + in.readUTF() + "from ???");
-          // set cr state to INIT or to TWO-WAY
-          DataOutputStream out = new DataOutputStream(server.getOutputStream());
-          out.writeUTF("HELLO");  
+      try {
+        //System.out.println(rd.processPortNumber);
+        serverSocket = new ServerSocket(this.rd.processPortNumber);
+      
+        while(true){
+          try{
+            // System.out.println("HELLO");
+            // System.out.println(serverSocket.getSocketAddress());
 
-          serverSocket.close();
-          server.close();
+            Socket server = serverSocket.accept();
+            //System.out.println("HELLO");
+            DataInputStream in = new DataInputStream(server.getInputStream());
+            System.out.println("recieved " + in.readUTF());
 
-        }catch(SocketTimeoutException s){
-          System.out.println("Socket timed out!");
-          break;
-        }catch(IOException e){
-          e.printStackTrace();
-          break;
-        }catch(Exception e){
-          e.printStackTrace();
-          break;
+            
+            // set cr state to INIT or to TWO-WAY
+
+            //SOPF
+            //System.out.print("Status" + rd.status);
+
+
+            DataOutputStream out = new DataOutputStream(server.getOutputStream());
+            out.writeUTF("HELLO from " + server.getLocalSocketAddress());  
+
+          }catch(SocketTimeoutException s){
+            System.out.println("Socket timed out!");
+            break;
+          }catch(IOException e){
+            e.printStackTrace();
+            break;
+          }catch(Exception e){
+            e.printStackTrace();
+            break;
+          }
         }
+        serverSocket.close();
+
+      } catch (IOException e1) {
+        e1.printStackTrace();
       }
     }
   }

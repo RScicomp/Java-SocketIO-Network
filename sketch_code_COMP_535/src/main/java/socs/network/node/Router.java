@@ -1,10 +1,12 @@
 package socs.network.node;
 
 import socs.network.util.Configuration;
+import socs.network.message.SOSPFPacket;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -12,6 +14,9 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class Router {
 
@@ -24,7 +29,17 @@ public class Router {
 
   public Router(Configuration config) {
     rd.simulatedIPAddress = config.getString("socs.network.router.ip");
+    rd.processIPAddress = "127.0.0.1";
+    rd.processPortNumber = config.getShort("socs.network.router.port");
+    rd.status = null;
+
     lsd = new LinkStateDatabase(rd);
+
+    //thread server listening to incoming connections.
+    ServerHandler handler = new ServerHandler(rd);
+    Thread t1 = new Thread(handler);
+    //handle incoming connection requests
+    t1.start();
   }
 
   /**
@@ -65,7 +80,7 @@ public class Router {
     attach.status = null; //Unsure?
 
     //Link to current router:
-    Link link = new Link(rd,attach);
+    Link link = new Link(this.rd, attach);
 
     //We need to add this to the ports we connect to.
     for(int i=0;i<4;i++){
@@ -86,26 +101,81 @@ public class Router {
     // LSAs are used to advertise networks
     // to which the advertising router is connected,
     // while other types are used to support additional
-    // hierarchy
+    // hierarchys
     
     //RG Code
     //Server Socket initialization
     //ServerSocket serverSocket = new ServerSocket(rd.processPortNumber);
 
     for (int i = 0; i<4; i++ ){
+
       Link link = ports[i];
       
       if(link != null){
-        System.out.println("Working");
         try{
+          Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
+          System.out.println("Just connected");
+          OutputStream outToServer = client.getOutputStream();
+          DataOutputStream out = new DataOutputStream(outToServer);
 
-          Runnable client = new ClientHandler(link.router2);
-          Thread t2 = new Thread(client);
-          //client.run();
-          t2.start();
-          //System.out.println("Just connected to" + client.getRemoteSocketAddress());
+          //Send hello to server **It is connecting to its own server, in server handler need to check the simulatedIpAddress is the same as the one in the link*
+          out.writeUTF("Hello from 1" + client.getLocalSocketAddress());
+          
+          //recieve hello from server
+          InputStream inFromServer = client.getInputStream();
+          DataInputStream in = new DataInputStream(inFromServer);
+          System.out.println(in.readUTF());
+          //set server tp INIT
+          //client.close();
+
+          //send hello to server
+          Socket client2 = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
+          System.out.println("Just connected");
+          OutputStream outToServer2 = client2.getOutputStream();
+          DataOutputStream out2 = new DataOutputStream(outToServer2);
+          
+          out2.writeUTF("Hello from 2" + client2.getLocalSocketAddress());
+          client2.close();
+          //System.out.println(link.router2.processIPAddress);
+
+          /*
+          Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
+          //System.out.println("Just connected");
+          OutputStream outToServer = client.getOutputStream();
+          DataOutputStream out = new DataOutputStream(outToServer);
+          
+          SOSPFPacket packet = new SOSPFPacket();
+          packet.srcProcessIP = rd.processIPAddress;
+          //print(packet.srcProcessIP);
+          packet.srcProcessPort = rd.processPortNumber;
+          packet.srcIP = rd.simulatedIPAddress;
+          packet.dstIP = link.router2.simulatedIPAddress;
+          packet.sospfType = 0;
+          //ObjectOutputStream out = 
+          //Send hello to server **It is connecting to its own server, in server handler need to check the simulatedIpAddress is the same as the one in the link*
+          //out.writeObject(packet);
+          //recieve hello from server
+          
+          InputStream inFromServer = client.getInputStream();
+          DataInputStream in = new DataInputStream(inFromServer);
+          System.out.println(in.readUTF());
+          out.writeUTF("Hello from 1" + client.getLocalSocketAddress());
+          client.close();
+         //out.close();
+
+          //set server tp INIT
+
+          //send hello to server
+          Socket client2 = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
+          System.out.println("Just connected");
+          OutputStream outToServer2 = client2.getOutputStream();
+          DataOutputStream out2 = new DataOutputStream(outToServer2);
+          
+          out2.writeUTF("Hello from 2" + client2.getLocalSocketAddress());
+          client2.close();
+        */
         }catch(Exception e){
-          System.out.println("Failed");
+          e.printStackTrace();
         }
       }
       //use our port number to send
@@ -150,16 +220,11 @@ public class Router {
     try {
       InputStreamReader isReader = new InputStreamReader(System.in);
       BufferedReader br = new BufferedReader(isReader);
-      //thread server listening to incoming connections.
-      //handle incoming connection requests
-      Runnable handler = new ServerHandler(rd);
-      //handle incoming connection requests
-      Thread t1 = new Thread(handler);
-      t1.start();
-
+      
       System.out.print(">> ");
       String command = br.readLine();
-      while (true) {
+      while (true) {  
+
         if (command.startsWith("detect ")) {
           String[] cmdLine = command.split(" ");
           processDetect(cmdLine[1]);
@@ -188,9 +253,9 @@ public class Router {
         System.out.print(">> ");
         command = br.readLine();
       }
+      
       isReader.close();
       br.close();
-      
     } catch (Exception e) {
       e.printStackTrace();
     }
