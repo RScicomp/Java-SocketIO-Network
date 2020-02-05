@@ -15,9 +15,9 @@ public class ServerHandler implements Runnable {
     }
   
     public void run() {
-      System.out.println("Starting: " + sr.simulatedIPAddress.toString());
+      //System.out.println("Starting: " + sr.simulatedIPAddress.toString());
       while(true){
-        
+
         try{
           //System.out.println("HELLO");
           ServerSocket serverSocket = new ServerSocket(sr.processPortNumber);

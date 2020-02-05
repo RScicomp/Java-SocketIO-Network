@@ -24,7 +24,7 @@ public class ClientHandler implements Runnable {
     }
   
     public void run() {
-      System.out.println("Starting Client to: " + cr.simulatedIPAddress.toString());
+      //System.out.println("Starting Client to: " + cr.simulatedIPAddress.toString());
       while(true){
 
         try{

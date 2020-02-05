@@ -71,6 +71,7 @@ public class Router {
     for(int i=0;i<4;i++){
       if(ports[i] == null){
         ports[i] = link;
+        break;
       }
     }
 
@@ -93,7 +94,9 @@ public class Router {
 
     for (int i = 0; i<4; i++ ){
       Link link = ports[i];
+      
       if(link != null){
+        System.out.println("Working");
         try{
 
           Runnable client = new ClientHandler(link.router2);
@@ -153,7 +156,7 @@ public class Router {
       //handle incoming connection requests
       Thread t1 = new Thread(handler);
       t1.start();
-      
+
       System.out.print(">> ");
       String command = br.readLine();
       while (true) {
