@@ -29,10 +29,9 @@ public class ServerHandler implements Runnable {
             //System.out.println("HELLO");
             DataInputStream in = new DataInputStream(server.getInputStream());
             System.out.println("recieved " + in.readUTF());
-
             
             // set cr state to INIT or to TWO-WAY
-
+            
             //SOPF
             //System.out.print("Status" + rd.status);
 

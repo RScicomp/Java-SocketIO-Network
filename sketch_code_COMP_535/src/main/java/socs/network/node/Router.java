@@ -114,19 +114,39 @@ public class Router {
       if(link != null){
         try{
           Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
+          OutputStream outToServer = client.getOutputStream();
+          ObjectOutputStream out = new ObjectOutputStream(outToServer);
+          SOSPFPacket packet = new SOSPFPacket();
+          packet.srcProcessIP = rd.processIPAddress;
+          //print(packet.srcProcessIP);
+          packet.srcProcessPort = rd.processPortNumber;
+          packet.srcIP = rd.simulatedIPAddress;
+          packet.dstIP = link.router2.simulatedIPAddress;
+          packet.sospfType = 0;
+
+          out.writeOjbect(packet);
+          
+          
+          /*
+          Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
           System.out.println("Just connected");
           OutputStream outToServer = client.getOutputStream();
           DataOutputStream out = new DataOutputStream(outToServer);
 
           //Send hello to server **It is connecting to its own server, in server handler need to check the simulatedIpAddress is the same as the one in the link*
-          out.writeUTF("Hello from 1" + client.getLocalSocketAddress());
+          out.writeUTF("HELLO from " + client.getLocalSocketAddress());
           
           //recieve hello from server
           InputStream inFromServer = client.getInputStream();
           DataInputStream in = new DataInputStream(inFromServer);
-          System.out.println(in.readUTF());
+          String message = in.readUTF();
+          System.out.println(message);
           //set server tp INIT
           //client.close();
+          if (message.equals("Hello")){
+            ports[i].router2.status = RouterStatus.TWO_WAY;//After recieving HELLO 
+            System.out.println("set ");
+          }
 
           //send hello to server
           Socket client2 = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
@@ -137,7 +157,7 @@ public class Router {
           out2.writeUTF("Hello from 2" + client2.getLocalSocketAddress());
           client2.close();
           //System.out.println(link.router2.processIPAddress);
-
+          */
           /*
           Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
           //System.out.println("Just connected");
