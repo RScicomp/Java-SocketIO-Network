@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -36,7 +37,7 @@ public class Router {
     lsd = new LinkStateDatabase(rd);
 
     //thread server listening to incoming connections.
-    ServerHandler handler = new ServerHandler(rd);
+    ServerHandler handler = new ServerHandler(rd,this);
     Thread t1 = new Thread(handler);
     //handle incoming connection requests
     t1.start();
@@ -113,20 +114,46 @@ public class Router {
       
       if(link != null){
         try{
+
+          //Send HELLO
           Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
           OutputStream outToServer = client.getOutputStream();
           ObjectOutputStream out = new ObjectOutputStream(outToServer);
           SOSPFPacket packet = new SOSPFPacket();
+          
           packet.srcProcessIP = rd.processIPAddress;
           //print(packet.srcProcessIP);
           packet.srcProcessPort = rd.processPortNumber;
           packet.srcIP = rd.simulatedIPAddress;
           packet.dstIP = link.router2.simulatedIPAddress;
           packet.sospfType = 0;
+          out.writeObject(packet);
+         
+          //Recieve          
+          InputStream inFromServer = client.getInputStream();
+          ObjectInputStream in = new ObjectInputStream(inFromServer);
+          SOSPFPacket message = (SOSPFPacket) in.readObject();
 
-          out.writeOjbect(packet);
+          //client.close();
+          if(packet.sospfType == 0){
+            System.out.println("recieved HELLO from " + message.srcIP );
+            ports[i].router2.status = RouterStatus.TWO_WAY;//After recieving HELLO 
+            System.out.println("set "+message.srcIP + " state to TWO_WAY");
+          }
+          //SEND again
+          //Socket client2 = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
+          //OutputStream outToServer2 = client2.getOutputStream();
+          //ObjectOutputStream out2 = new ObjectOutputStream(outToServer2);
           
-          
+          packet = new SOSPFPacket();
+          packet.srcProcessIP = rd.processIPAddress;
+          packet.srcProcessPort = rd.processPortNumber;
+          packet.srcIP = rd.simulatedIPAddress;
+          packet.dstIP = link.router2.simulatedIPAddress;
+          packet.sospfType = 0;
+          out.writeObject(packet);
+          client.close();
+          //SEND HELLO
           /*
           Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
           System.out.println("Just connected");
