@@ -84,10 +84,23 @@ public class Router {
     Link link = new Link(this.rd, attach);
 
     //We need to add this to the ports we connect to.
-    for(int i=0;i<4;i++){
-      if(ports[i] == null){
-        ports[i] = link;
+    boolean isAttached = false;
+
+    //check if already attached
+    for(int i=0; i<4; i++){
+      if (ports[i] != null && ports[i].router2.simulatedIPAddress.equals(attach.simulatedIPAddress)){
+        isAttached = true;
         break;
+      }
+    }
+
+    if(!isAttached){
+      //We need to add this to the ports we connect to.
+      for(int i=0;i<4;i++){
+        if(ports[i] == null){
+          ports[i] = link;
+          break;
+        }
       }
     }
 
@@ -132,95 +145,36 @@ public class Router {
           //Recieve          
           InputStream inFromServer = client.getInputStream();
           ObjectInputStream in = new ObjectInputStream(inFromServer);
-          SOSPFPacket message = (SOSPFPacket) in.readObject();
-
-          //client.close();
-          if(packet.sospfType == 0){
-            System.out.println("recieved HELLO from " + message.srcIP );
-            ports[i].router2.status = RouterStatus.TWO_WAY;//After recieving HELLO 
-            System.out.println("set "+message.srcIP + " state to TWO_WAY");
-          }
-          //SEND again
-          //Socket client2 = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
-          //OutputStream outToServer2 = client2.getOutputStream();
-          //ObjectOutputStream out2 = new ObjectOutputStream(outToServer2);
+          Object message2 = in.readObject();
+          //If we recieve a message telling us wrong IP, print error message
+          if(message2.toString().equals("Wrong IP")){
+            System.out.println("Wrong IP: "+ link.router2.simulatedIPAddress);
+          }else{
+            SOSPFPacket message = (SOSPFPacket) message2; 
           
-          packet = new SOSPFPacket();
-          packet.srcProcessIP = rd.processIPAddress;
-          packet.srcProcessPort = rd.processPortNumber;
-          packet.srcIP = rd.simulatedIPAddress;
-          packet.dstIP = link.router2.simulatedIPAddress;
-          packet.sospfType = 0;
-          out.writeObject(packet);
-          client.close();
-          //SEND HELLO
-          /*
-          Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
-          System.out.println("Just connected");
-          OutputStream outToServer = client.getOutputStream();
-          DataOutputStream out = new DataOutputStream(outToServer);
 
-          //Send hello to server **It is connecting to its own server, in server handler need to check the simulatedIpAddress is the same as the one in the link*
-          out.writeUTF("HELLO from " + client.getLocalSocketAddress());
-          
-          //recieve hello from server
-          InputStream inFromServer = client.getInputStream();
-          DataInputStream in = new DataInputStream(inFromServer);
-          String message = in.readUTF();
-          System.out.println(message);
-          //set server tp INIT
-          //client.close();
-          if (message.equals("Hello")){
-            ports[i].router2.status = RouterStatus.TWO_WAY;//After recieving HELLO 
-            System.out.println("set ");
+            //client.close();
+            if(packet.sospfType == 0){
+              System.out.println("recieved HELLO from " + message.srcIP );
+              ports[i].router2.status = RouterStatus.TWO_WAY;//After recieving HELLO
+              System.out.println("set "+message.srcIP + " state to TWO_WAY");
+            }
+            //SEND again, HELLO
+            packet = new SOSPFPacket();
+            packet.srcProcessIP = rd.processIPAddress;
+            packet.srcProcessPort = rd.processPortNumber;
+            packet.srcIP = rd.simulatedIPAddress;
+            packet.dstIP = link.router2.simulatedIPAddress;
+            packet.sospfType = 0;
+            out.writeObject(packet);
+            //System.out.println("WE ARE HERE");
+
+            in.close();
+            out.close();
+            client.close();
           }
 
-          //send hello to server
-          Socket client2 = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
-          System.out.println("Just connected");
-          OutputStream outToServer2 = client2.getOutputStream();
-          DataOutputStream out2 = new DataOutputStream(outToServer2);
-          
-          out2.writeUTF("Hello from 2" + client2.getLocalSocketAddress());
-          client2.close();
-          //System.out.println(link.router2.processIPAddress);
-          */
-          /*
-          Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
-          //System.out.println("Just connected");
-          OutputStream outToServer = client.getOutputStream();
-          DataOutputStream out = new DataOutputStream(outToServer);
-          
-          SOSPFPacket packet = new SOSPFPacket();
-          packet.srcProcessIP = rd.processIPAddress;
-          //print(packet.srcProcessIP);
-          packet.srcProcessPort = rd.processPortNumber;
-          packet.srcIP = rd.simulatedIPAddress;
-          packet.dstIP = link.router2.simulatedIPAddress;
-          packet.sospfType = 0;
-          //ObjectOutputStream out = 
-          //Send hello to server **It is connecting to its own server, in server handler need to check the simulatedIpAddress is the same as the one in the link*
-          //out.writeObject(packet);
-          //recieve hello from server
-          
-          InputStream inFromServer = client.getInputStream();
-          DataInputStream in = new DataInputStream(inFromServer);
-          System.out.println(in.readUTF());
-          out.writeUTF("Hello from 1" + client.getLocalSocketAddress());
-          client.close();
-         //out.close();
 
-          //set server tp INIT
-
-          //send hello to server
-          Socket client2 = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
-          System.out.println("Just connected");
-          OutputStream outToServer2 = client2.getOutputStream();
-          DataOutputStream out2 = new DataOutputStream(outToServer2);
-          
-          out2.writeUTF("Hello from 2" + client2.getLocalSocketAddress());
-          client2.close();
-        */
         }catch(Exception e){
           e.printStackTrace();
         }
@@ -253,7 +207,16 @@ public class Router {
    * output the neighbors of the routers
    */
   private void processNeighbors() {
+    for(int i=0;i<4;i++){
+      if(ports[i] == null){
 
+        break;
+      }
+      //Ensure links are two way only
+      if(ports[i].router2.status == RouterStatus.TWO_WAY){
+        System.out.println(ports[i].router2.simulatedIPAddress + " is neighbor" + (i+1));
+      }
+    }
   }
 
   /**
