@@ -34,7 +34,7 @@ public class Router {
     lsd = new LinkStateDatabase(rd);
 
     //thread server listening to incoming connections.
-    ServerHandler handler = new ServerHandler(rd);
+    ServerHandler handler = new ServerHandler(this);
     Thread t1 = new Thread(handler);
     //handle incoming connection requests
     t1.start();
@@ -112,27 +112,22 @@ public class Router {
       if(link != null){
         try{
 
-          //System.out.println(link.router2.processIPAddress);
-
-
           Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
-          System.out.println("Just connected");
           OutputStream outToServer = client.getOutputStream();
           DataOutputStream out = new DataOutputStream(outToServer);
 
           //Send hello to server **It is connecting to its own server, in server handler need to check the simulatedIpAddress is the same as the one in the link*
           out.writeUTF("Hello from " + client.getLocalSocketAddress());
-          
+          out.flush();
           //recieve hello from server
           InputStream inFromServer = client.getInputStream();
           DataInputStream in = new DataInputStream(inFromServer);
-          System.out.println(in.readUTF());
+          System.out.println("received " + in.readUTF());
 
           //set server tp INIT
 
           //send hello to server
           out.writeUTF("Hello from " + client.getLocalSocketAddress());
-          client.close();
 
         }catch(Exception e){
           e.printStackTrace();

@@ -8,31 +8,33 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 
 public class ServerHandler implements Runnable {
-    private RouterDescription rd;
-    public ServerHandler(RouterDescription rd) {
-      this.rd = rd;
+    private Router router;
+    
+    public ServerHandler(Router rd) {
+      this.router = rd;
     }
   
     public void run() {
       ServerSocket serverSocket;
 
       try {
-        //System.out.println(rd.processPortNumber);
-        serverSocket = new ServerSocket(this.rd.processPortNumber);
+        serverSocket = new ServerSocket(this.router.rd.processPortNumber);
       
         while(true){
           try{
-            // System.out.println("HELLO");
-            // System.out.println(serverSocket.getSocketAddress());
-
             Socket server = serverSocket.accept();
-            System.out.println("HELLO");
             DataInputStream in = new DataInputStream(server.getInputStream());
+            
+            //Recives and prints Hello
             System.out.println("recieved " + in.readUTF());
             // set cr state to INIT or to TWO-WAY
             DataOutputStream out = new DataOutputStream(server.getOutputStream());
+            
+            //Send Hello
             out.writeUTF("HELLO from " + server.getLocalSocketAddress());  
+            out.flush();
 
+      
           }catch(SocketTimeoutException s){
             System.out.println("Socket timed out!");
             break;
@@ -45,9 +47,9 @@ public class ServerHandler implements Runnable {
           }
         }
         serverSocket.close();
-
       } catch (IOException e1) {
         e1.printStackTrace();
       }
+      
     }
   }
