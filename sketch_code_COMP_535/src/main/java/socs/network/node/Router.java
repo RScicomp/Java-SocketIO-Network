@@ -79,15 +79,28 @@ public class Router {
 
     //Link to current router:
     Link link = new Link(this.rd, attach);
+    
+    //check if already attached
+    boolean isAttached = false;
 
-    //We need to add this to the ports we connect to.
-    for(int i=0;i<4;i++){
-      if(ports[i] == null){
-        ports[i] = link;
+    //check if already attached
+    for(int i=0; i<4; i++){
+      if (ports[i] != null && ports[i].router2.simulatedIPAddress.equals(attach.simulatedIPAddress)){
+        isAttached = true;
         break;
       }
     }
 
+    if(!isAttached){
+      //We need to add this to the ports we connect to.
+      for(int i=0;i<4;i++){
+        if(ports[i] == null){
+          ports[i] = link;
+          break;
+        }
+      }
+    }
+    
   }
 
   /**
@@ -161,7 +174,13 @@ public class Router {
    * output the neighbors of the routers
    */
   private void processNeighbors() {
-
+    //iterate through the ports and print neighbours
+    for(int i=0;i<4;i++){
+      if(ports[i] == null){
+        break;
+      }
+      System.out.println(ports[i].router2.simulatedIPAddress + " is neighbour" + (i+1));
+    }
   }
 
   /**
