@@ -2,6 +2,8 @@ package socs.network.node;
 
 import socs.network.util.Configuration;
 import socs.network.message.SOSPFPacket;
+import socs.network.message.LSA;
+import socs.network.message.LinkDescription;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -35,7 +37,7 @@ public class Router {
     rd.status = null;
 
     lsd = new LinkStateDatabase(rd);
-
+    System.out.println(lsd);
     //thread server listening to incoming connections.
     ServerHandler handler = new ServerHandler(rd,this);
     Thread t1 = new Thread(handler);
@@ -82,7 +84,7 @@ public class Router {
 
     //Link to current router:
     Link link = new Link(this.rd, attach);
-
+            
     //We need to add this to the ports we connect to.
     boolean isAttached = false;
 
@@ -98,7 +100,32 @@ public class Router {
       //We need to add this to the ports we connect to.
       for(int i=0;i<4;i++){
         if(ports[i] == null){
+          System.out.println("Attaching!");
+          //Create LSA to be inserted into LINKSTATE DATABASE Store. This LSA describes the connection from current router to others.
+          LSA lsa = new LSA();
+          lsa.linkStateID = rd.simulatedIPAddress;
+
+          //If this LSA already exists, update it. Incremenet to sure that we know the version. copy all past links into the newest LSA.
+          if(lsd._store.containsKey(rd.simulatedIPAddress)){
+            LSA previousLSA = (LSA)lsd._store.get(rd.simulatedIPAddress);
+            lsa.lsaSeqNumber = previousLSA.lsaSeqNumber+1;
+            System.out.println("Updating");
+            lsa.links = lsd._store.get(rd.simulatedIPAddress).links;
+          }
+
+          //Create a Link description. (What we're linking to, the port and the weight)
+          LinkDescription ld = new LinkDescription();
+          ld.linkID = attach.simulatedIPAddress;
+          ld.portNum = i;
+          ld.tosMetrics = weight;
+          lsa.links.add(ld);
+
+          //Add the new lsa into the LSD hashmap. at the specified address.
+          lsd._store.put(lsa.linkStateID,lsa);
+
+          System.out.println(lsd);
           ports[i] = link;
+
           break;
         }
       }
@@ -117,10 +144,6 @@ public class Router {
     // while other types are used to support additional
     // hierarchys
     
-    //RG Code
-    //Server Socket initialization
-    //ServerSocket serverSocket = new ServerSocket(rd.processPortNumber);
-
     for (int i = 0; i<4; i++ ){
 
       Link link = ports[i];

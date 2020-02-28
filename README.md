@@ -1,5 +1,25 @@
 # Networks_Assignments
 
+To Run: 
+java -jar target/COMP535-1.0-SNAPSHOT-jar-with-dependencies.jar conf/router1.conf
+
+To Attach:
+attach 127.0.0.1 5020 192.168.1.100 5
+See config files for proper Simulated IPs and Ports for each Router!
+
+To Start:
+start
+
+To Check neighbors:
+neighbors
+
+
+
+
+
+
+
+
 In order to set JAVA_HOME :
 
 open -e .bash_profile and fill in the following with your path
