@@ -10,7 +10,7 @@ public class LSA implements Serializable {
   public int lsaSeqNumber = Integer.MIN_VALUE;
 
   public LinkedList<LinkDescription> links = new LinkedList<LinkDescription>();
-
+  
   @Override
   public String toString() {
     StringBuffer sb = new StringBuffer();

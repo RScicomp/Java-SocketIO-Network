@@ -1,5 +1,10 @@
 package socs.network.node;
 
+import socs.network.util.Configuration;
+import socs.network.message.SOSPFPacket;
+import socs.network.message.LSA;
+import socs.network.message.LinkDescription;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
@@ -38,7 +43,7 @@ public class ServerHandler implements Runnable {
             ObjectInputStream in = new ObjectInputStream(inFromServer);
             SOSPFPacket packet = (SOSPFPacket) in.readObject();
             int portnumber = -1;
-            //If the packet destination is incorrect send an notification back to sender 
+            //If the packet destination is incorrect send a notification back to sender 
             if(!packet.dstIP.equals(router.rd.simulatedIPAddress)){
               ObjectOutputStream out = new ObjectOutputStream(server.getOutputStream());
               out.writeObject("Wrong IP");
@@ -49,7 +54,9 @@ public class ServerHandler implements Runnable {
                 for(int i = 0; i < 4; i++){
                   //check if already exists?
                   if(router.ports[i] == null){
-                    //create link
+
+                  
+
                     RouterDescription r2 = new RouterDescription();
                     r2.simulatedIPAddress = packet.srcIP;
                     r2.processIPAddress = packet.srcProcessIP;
@@ -58,6 +65,95 @@ public class ServerHandler implements Runnable {
                     router.ports[i] = new Link(router.rd,r2);
                     System.out.println("set " + packet.srcIP + " state to INIT");
                     portnumber = i;
+                    LSA newlsa = new LSA();
+
+                    //create link
+                    System.out.println("LSAARRAY");
+                    System.out.println(packet.lsaArray);
+
+                    //Update LSD 
+                    LSA lsa = new LSA();
+                    lsa.linkStateID = rd.simulatedIPAddress;
+
+                    //If this LSA already exists, update it. Incremenet to sure that we know the version. copy all past links into the newest LSA.
+                    if(router.lsd._store.containsKey(rd.simulatedIPAddress)){
+                      for ( LSA lsaold1 : packet.lsaArray){
+                        //If sender ip is in the LSAarray
+                        if(lsaold1.linkstateID.equals(r2.simulatedIPAddress)){
+                          for ( LSA lsastore: router.lsd_.store){
+
+                            //If present in our LSD
+                            if(lsastore.linkstateID.equals(lsaold1.linkstateID)){
+                              //UPDATE IF sequence number lower
+                              if (lsastore.lsaSeqNumber < lsaold1.lsaSeqNumber){
+                                //Loop through the links 
+                              }
+                              
+                            }
+
+                          }
+                        }
+                      }
+
+                      LSA previousLSA = (LSA)router.lsd._store.get(rd.simulatedIPAddress);
+
+                      lsa.lsaSeqNumber = previousLSA.lsaSeqNumber+1;
+                      System.out.println("Updating");
+                      lsa.links = router.lsd._store.get(rd.simulatedIPAddress).links;
+                    }
+                    else{
+                      //Upon HELLO we must create a LSA. Because this is a HELLO we can send link weight through packet
+                      //Create a Link description. (What we're linking to, the port and the weight)
+                      LinkDescription ld = new LinkDescription();
+                      ld.linkID = r2.simulatedIPAddress;
+                      int weight = 0;
+                      for ( LSA lsaold : packet.lsaArray){
+  
+                        for (LinkDescription linkd: lsaold.links){
+                          //if router 2 in the links of the source router.
+                          if(linkd.linkID.equals(rd.simulatedIPAddress)){
+                            weight = lsaold.links.get(sourceI)tosMetrics;
+                            break;
+                          }
+                        }
+                      }
+                      ld.portNum = portnumber;
+                      ld.tosMetrics = weight;
+                      //lsa.links.add(ld);
+
+                      //Synchronize Link State Database, retrieving LSD Information.
+                      for (LSA lsaold : packet.lsaArray){
+                        for (LinkDescription linkd: lsaold.links){
+                          LinkDescription ld = new LinkDescription();
+                          //If you encouter yourself
+                          if(linkd.linkID.equals(rd.simulatedIPAddress)){
+                            ld.linkID = router.simulatedIPAddress;
+                            ld.portNum =portnumber;
+                            ld.tosMetrics=weight;
+                            lsa.links.add(ld);
+                          }else{
+                            ld.linkID = r2.simulatedIPAddress;
+                            ld.portNum = portnumber;
+                            ld.tosMetrics = linkd.tosMetrics + weight;
+                            lsa.links.add(ld);
+                          }
+                        }
+                      }
+
+
+                      System.out.println("Recieved LSA");
+                      System.out.println(ld);
+                      //Add the new lsa into the LSD hashmap. at the specified address.
+                      rd.lsd._store.put(lsa.linkStateID,lsa);
+
+
+                      //System.out.println(lsd);
+                    }  
+                    
+
+
+
+
                     break;
                   }
                 }
@@ -84,7 +180,7 @@ public class ServerHandler implements Runnable {
                 System.out.println("recieved HELLO from " + response.srcIP);
                 router.ports[portnumber].router2.status = RouterStatus.TWO_WAY;
                 System.out.println("set "+response.srcIP + " state to TWO_WAY");
-
+               
               }
               in.close();
               out.close();

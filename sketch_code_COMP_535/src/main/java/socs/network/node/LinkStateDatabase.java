@@ -23,6 +23,9 @@ public class LinkStateDatabase {
    */
   String getShortestPath(String destinationIP) {
     //TODO: fill the implementation here
+
+    //1. Get the most up to date store.
+    
     return null;
   }
 

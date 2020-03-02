@@ -5,6 +5,7 @@ import socs.network.message.SOSPFPacket;
 import socs.network.message.LSA;
 import socs.network.message.LinkDescription;
 
+import java.util.Vector;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -39,10 +40,12 @@ public class Router {
     lsd = new LinkStateDatabase(rd);
     System.out.println(lsd);
     //thread server listening to incoming connections.
+    
     ServerHandler handler = new ServerHandler(rd,this);
     Thread t1 = new Thread(handler);
     //handle incoming connection requests
     t1.start();
+    
   }
 
   /**
@@ -82,6 +85,7 @@ public class Router {
     attach.simulatedIPAddress = simulatedIP;
     attach.status = null; //Unsure?
 
+
     //Link to current router:
     Link link = new Link(this.rd, attach);
             
@@ -117,6 +121,8 @@ public class Router {
           LinkDescription ld = new LinkDescription();
           ld.linkID = attach.simulatedIPAddress;
           ld.portNum = i;
+          System.out.println("PortNum:");
+          System.out.println(ld.portNum);
           ld.tosMetrics = weight;
           lsa.links.add(ld);
 
@@ -134,7 +140,7 @@ public class Router {
   }
 
   /**
-   * broadcast Hello to neighbors
+   * broadcast Hello to neighbors.... RG here: When sending hello we send the weight and so the router 2 now can update their lsd database...
    */
   private void processStart() {
     // Router 1 (R1) broadcasts Hello through all ports
@@ -143,7 +149,6 @@ public class Router {
     // to which the advertising router is connected,
     // while other types are used to support additional
     // hierarchys
-    
     for (int i = 0; i<4; i++ ){
 
       Link link = ports[i];
@@ -152,6 +157,7 @@ public class Router {
         try{
 
           //Send HELLO
+
           Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
           OutputStream outToServer = client.getOutputStream();
           ObjectOutputStream out = new ObjectOutputStream(outToServer);
@@ -163,12 +169,16 @@ public class Router {
           packet.srcIP = rd.simulatedIPAddress;
           packet.dstIP = link.router2.simulatedIPAddress;
           packet.sospfType = 0;
+          packet.lsaArray = new Vector<LSA>(lsd._store.values());
+
+
           out.writeObject(packet);
          
-          //Recieve          
+          //Recieve
           InputStream inFromServer = client.getInputStream();
           ObjectInputStream in = new ObjectInputStream(inFromServer);
           Object message2 = in.readObject();
+          
           //If we recieve a message telling us wrong IP, print error message
           if(message2.toString().equals("Wrong IP")){
             System.out.println("Wrong IP: "+ link.router2.simulatedIPAddress);
@@ -199,7 +209,8 @@ public class Router {
 
 
         }catch(Exception e){
-          e.printStackTrace();
+          System.out.println("Error");
+          //e.printStackTrace();
         }
       }
       //use our port number to send
