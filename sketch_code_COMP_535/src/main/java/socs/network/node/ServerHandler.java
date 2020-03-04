@@ -161,12 +161,30 @@ public class ServerHandler implements Runnable {
                 
 
               }
+              //Link State Update Occurring
               if(packet.sospfType==1){
                 LSA newlsa = new LSA();
                 System.out.println("Performing LinkState Update");
                 //create link
                 System.out.println("LSAARRAY");
                 System.out.println(packet.lsaArray);
+                //Upon recieving a packet containing the LSAUpdate: we must look through each LSA and cross check with our lsd database to 
+                //ensure that each and every LSA is up to date. Otherwise, we replace. If not present, we add. 
+                for (LSA recieved: packet.lsaArray){
+                  
+                  if(router.lsd._store.get(recieved.linkStateID)==null){
+                    router.lsd._store.put(recieved.linkStateID,recieved);
+                  }
+                  else{
+                    System.out.println(router.lsd._store.get(recieved.linkStateID));
+                    //Replace LSA if old. Else ignore it.
+                    if(router.lsd._store.get(recieved.linkStateID).lsaSeqNumber > recieved.lsaSeqNumber){
+                      router.lsd._store.put(recieved.linkStateID , recieved);
+                    }
+                  }
+                }
+                //Check to see if we have approriate LSAs
+                System.out.println(router.lsd._store);
               }
               
               if(packet.sospfType == 0 ){

@@ -27,7 +27,7 @@ public class Router {
   protected LinkStateDatabase lsd; //
 
   RouterDescription rd = new RouterDescription();
-
+  Thread listener = null;
   //assuming that all routers are with 4 ports
   Link[] ports = new Link[4]; //ports available to current router
 
@@ -44,8 +44,7 @@ public class Router {
     ServerHandler handler = new ServerHandler(rd,this);
     Thread t1 = new Thread(handler);
     //handle incoming connection requests
-    t1.start();
-    
+    listener = t1;
   }
 
   /**
@@ -91,12 +90,17 @@ public class Router {
             
     //We need to add this to the ports we connect to.
     boolean isAttached = false;
+    int attachedport = -1;
 
     //check if already attached
     for(int i=0; i<4; i++){
       if (ports[i] != null && ports[i].router2.simulatedIPAddress.equals(attach.simulatedIPAddress)){
+        System.out.println("Already Attached!");
         isAttached = true;
+        attachedport = i;
         break;
+        //isAttached = true;
+        //break;
       }
     }
 
@@ -113,6 +117,7 @@ public class Router {
           //To ensure that when we send out a packet with lsaArray, it contains the most up to date LSAs. 
           if(lsd._store.containsKey(rd.simulatedIPAddress)){
             LSA previousLSA = (LSA)lsd._store.get(rd.simulatedIPAddress);
+            System.out.println("Updating Sequence number to: " + previousLSA.lsaSeqNumber+1);
             lsa.lsaSeqNumber = previousLSA.lsaSeqNumber+1;
             System.out.println("Updating");
             lsa.links = lsd._store.get(rd.simulatedIPAddress).links;
@@ -137,7 +142,17 @@ public class Router {
         }
       }
     }
-
+    //allowing for multiple attaches?
+    /*
+    else{
+      LinkedList<LinkDescription> old = lsd._store.get(rd.simulatedIP).links;
+      for (LinkDescription link : old){
+        if(link.linkID == attach.simulatedIP){
+          old.tosMetrics
+        }
+      }
+    }
+    */
   }
 
   /**
@@ -150,6 +165,13 @@ public class Router {
     // to which the advertising router is connected,
     // while other types are used to support additional
     // hierarchys
+    try{
+      listener.start();
+    }
+    catch(Exception e){
+      System.out.println("Error Starting");
+    }
+
     for (int i = 0; i<4; i++ ){
 
       Link link = ports[i];
