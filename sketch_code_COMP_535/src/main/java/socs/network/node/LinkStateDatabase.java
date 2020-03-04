@@ -31,7 +31,6 @@ public class LinkStateDatabase {
     ArrayList<String> routers = this.getRouters();
     System.out.println("ROUTERS: " + routers.toString());
 
-
     //create hashmap to map routerId to integer
     HashMap<String, Integer> posMap = new HashMap<String, Integer>();
     for(int i = 0; i < routers.size(); i++){
@@ -50,10 +49,9 @@ public class LinkStateDatabase {
     }
 
     g.printGraph();
-
-
+    
     //TODO: run Dijskras on weighted graph
-
+    g.dijkstra_GetMinDistances(posMap.get(this.rd.simulatedIPAddress));
 
     return null;
   }

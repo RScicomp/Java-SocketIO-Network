@@ -1,11 +1,10 @@
+socs/network/node/WeightedGraph$MinHeap.class
 socs/network/message/SOSPFPacket.class
-WeightedGraph$Graph.class
 socs/network/message/LinkDescription.class
 socs/network/node/RouterDescription.class
-WeightedGraph.class
 socs/network/message/LSA.class
 socs/network/node/Link.class
 socs/network/node/RouterStatus.class
-WeightedGraph$Edge.class
 socs/network/util/Configuration.class
 socs/network/node/ClientHandler.class
+socs/network/node/WeightedGraph$HeapNode.class

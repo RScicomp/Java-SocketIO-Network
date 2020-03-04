@@ -167,19 +167,23 @@ public class ServerHandler implements Runnable {
                 System.out.println("Performing LinkState Update");
                 //create link
                 System.out.println("LSAARRAY");
+
                 System.out.println(packet.lsaArray);
                 //Upon recieving a packet containing the LSAUpdate: we must look through each LSA and cross check with our lsd database to 
                 //ensure that each and every LSA is up to date. Otherwise, we replace. If not present, we add. 
                 for (LSA recieved: packet.lsaArray){
                   
+                  //IF LSA not in already, put it in. 
                   if(router.lsd._store.get(recieved.linkStateID)==null){
                     router.lsd._store.put(recieved.linkStateID,recieved);
                   }
                   else{
+                    System.out.println("We recieved a new LSA");
                     System.out.println(router.lsd._store.get(recieved.linkStateID));
                     //Replace LSA if old. Else ignore it.
                     if(router.lsd._store.get(recieved.linkStateID).lsaSeqNumber > recieved.lsaSeqNumber){
                       router.lsd._store.put(recieved.linkStateID , recieved);
+                      System.out.println("It has replaced an old LSA");
                     }
                   }
                 }
