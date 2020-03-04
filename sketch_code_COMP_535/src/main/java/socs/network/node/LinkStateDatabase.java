@@ -8,6 +8,7 @@ import java.util.HashMap;
 public class LinkStateDatabase {
 
   //linkID => LSAInstance
+  //LSAs. We store the LSAs of other routers.
   HashMap<String, LSA> _store = new HashMap<String, LSA>();
 
   private RouterDescription rd = null;
@@ -25,7 +26,7 @@ public class LinkStateDatabase {
     //TODO: fill the implementation here
 
     //1. Get the most up to date store.
-    
+
     return null;
   }
 

@@ -110,6 +110,7 @@ public class Router {
           lsa.linkStateID = rd.simulatedIPAddress;
 
           //If this LSA already exists, update it. Incremenet to sure that we know the version. copy all past links into the newest LSA.
+          //To ensure that when we send out a packet with lsaArray, it contains the most up to date LSAs. 
           if(lsd._store.containsKey(rd.simulatedIPAddress)){
             LSA previousLSA = (LSA)lsd._store.get(rd.simulatedIPAddress);
             lsa.lsaSeqNumber = previousLSA.lsaSeqNumber+1;
@@ -169,7 +170,6 @@ public class Router {
           packet.srcIP = rd.simulatedIPAddress;
           packet.dstIP = link.router2.simulatedIPAddress;
           packet.sospfType = 0;
-          packet.lsaArray = new Vector<LSA>(lsd._store.values());
 
 
           out.writeObject(packet);
@@ -184,9 +184,8 @@ public class Router {
             System.out.println("Wrong IP: "+ link.router2.simulatedIPAddress);
           }else{
             SOSPFPacket message = (SOSPFPacket) message2; 
-          
 
-            //client.close();
+            //Confirmed that reciever is a two way
             if(packet.sospfType == 0){
               System.out.println("recieved HELLO from " + message.srcIP );
               ports[i].router2.status = RouterStatus.TWO_WAY;//After recieving HELLO
@@ -212,18 +211,51 @@ public class Router {
           System.out.println("Error");
           //e.printStackTrace();
         }
+
+
       }
-      //use our port number to send
-      //Socket client = new Socket("Sender", rd.processPortNumber);
-
-
-
-      //set up client and send hello back
-
       
-      //Send message using socket
+      
+    }
+    //Perform LSAUpdate once we confirm all are TWO WAY.
+    lsaUpdate();
+  }
+
+  //Send packets
+  public void sendPacket(SOSPFPacket packet, RouterDescription receiver){
+    try{
+      Socket client = new Socket(receiver.processIPAddress, receiver.processPortNumber);
+      OutputStream outToServer = client.getOutputStream();
+      ObjectOutputStream out = new ObjectOutputStream(outToServer);
+      out.writeObject(packet);
+      out.close(); 
+      client.close();
+    }catch(Exception e){
+      System.out.println("Error Sending Packet");
+    }
+
+  }
+
+  //Perform lsaUpdate
+  public void lsaUpdate(){
+    //Send packets containing the current lsd to all neighbors
+    for (Link link : this.ports){
+      if(link!= null){
+        //Confirm the links are two way.
+        if(link.router2.status == RouterStatus.TWO_WAY){ 
+          SOSPFPacket update = new SOSPFPacket();
+          update.srcProcessIP = rd.processIPAddress;
+          update.srcProcessPort = rd.processPortNumber;
+          update.srcIP = rd.simulatedIPAddress;
+          update.dstIP = link.router2.simulatedIPAddress;
+          update.sospfType = 1;
+          update.lsaArray = new Vector<LSA>(lsd._store.values());
+          sendPacket(update,link.router2);
+        }
+      }
     }
   }
+
 
   /**
    * attach the link to the remote router, which is identified by the given simulated ip;

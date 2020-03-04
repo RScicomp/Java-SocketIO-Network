@@ -48,15 +48,17 @@ public class ServerHandler implements Runnable {
               ObjectOutputStream out = new ObjectOutputStream(server.getOutputStream());
               out.writeObject("Wrong IP");
               in.close();
-            }else{
+            }
+            else{
+              //Upon recieving a message. We want to forward the LSA to 
               if(packet.sospfType == 0){
                 System.out.println("recieved HELLO from " + packet.srcIP );//once recieved we init
                 for(int i = 0; i < 4; i++){
-                  //check if already exists?
+                  //check if already exists
                   if(router.ports[i] == null){
 
-                  
-
+                    
+                    //From recieved message create router description and assign port from packet
                     RouterDescription r2 = new RouterDescription();
                     r2.simulatedIPAddress = packet.srcIP;
                     r2.processIPAddress = packet.srcProcessIP;
@@ -65,23 +67,20 @@ public class ServerHandler implements Runnable {
                     router.ports[i] = new Link(router.rd,r2);
                     System.out.println("set " + packet.srcIP + " state to INIT");
                     portnumber = i;
-                    LSA newlsa = new LSA();
 
-                    //create link
-                    System.out.println("LSAARRAY");
-                    System.out.println(packet.lsaArray);
 
+                    /*
                     //Update LSD 
                     LSA lsa = new LSA();
                     lsa.linkStateID = rd.simulatedIPAddress;
 
-                    //If this LSA already exists, update it. Incremenet to sure that we know the version. copy all past links into the newest LSA.
+                    //If LSA already exists, update it. Incremenet to sure that we know the version. copy all past links into the newest LSA.
                     if(router.lsd._store.containsKey(rd.simulatedIPAddress)){
+                      //Loop through the lsaArray from packet.
                       for ( LSA lsaold1 : packet.lsaArray){
-                        //If sender ip is in the LSAarray
+                        //If sender ip is in the LSAarray (Make sure it is the most up to date)
                         if(lsaold1.linkstateID.equals(r2.simulatedIPAddress)){
                           for ( LSA lsastore: router.lsd_.store){
-
                             //If present in our LSD
                             if(lsastore.linkstateID.equals(lsaold1.linkstateID)){
                               //UPDATE IF sequence number lower
@@ -112,7 +111,7 @@ public class ServerHandler implements Runnable {
                         for (LinkDescription linkd: lsaold.links){
                           //if router 2 in the links of the source router.
                           if(linkd.linkID.equals(rd.simulatedIPAddress)){
-                            weight = lsaold.links.get(sourceI)tosMetrics;
+                            weight = lsaold.links.get(sourceI).tosMetrics;
                             break;
                           }
                         }
@@ -120,6 +119,8 @@ public class ServerHandler implements Runnable {
                       ld.portNum = portnumber;
                       ld.tosMetrics = weight;
                       //lsa.links.add(ld);
+
+
 
                       //Synchronize Link State Database, retrieving LSD Information.
                       for (LSA lsaold : packet.lsaArray){
@@ -152,39 +153,45 @@ public class ServerHandler implements Runnable {
                     
 
 
-
+                    */
 
                     break;
                   }
                 }
+                
+
               }
-
-            
-            
-            
-            
-              //to make sure two way is occurring we send a message back so the initializor can set us as two way
-              ObjectOutputStream out = new ObjectOutputStream(server.getOutputStream());
-              SOSPFPacket presponse = new SOSPFPacket();
-              presponse.srcProcessIP = rd.processIPAddress;
-              presponse.srcProcessPort = rd.processPortNumber;
-              presponse.srcIP = rd.simulatedIPAddress;
-              presponse.dstIP = packet.srcIP;
-              presponse.sospfType = 0;
-
-              out.writeObject(presponse);
-
-              //Upon recieval confirmation set status of sending router state to TWO WAY.
-              SOSPFPacket response = (SOSPFPacket) in.readObject();
-              if (response.sospfType== 0){
-                System.out.println("recieved HELLO from " + response.srcIP);
-                router.ports[portnumber].router2.status = RouterStatus.TWO_WAY;
-                System.out.println("set "+response.srcIP + " state to TWO_WAY");
-               
+              if(packet.sospfType==1){
+                LSA newlsa = new LSA();
+                System.out.println("Performing LinkState Update");
+                //create link
+                System.out.println("LSAARRAY");
+                System.out.println(packet.lsaArray);
               }
-              in.close();
-              out.close();
+              
+              if(packet.sospfType == 0 ){
+                //to make sure two way is occurring we send a message back so the initializor can set us as two way
+                ObjectOutputStream out = new ObjectOutputStream(server.getOutputStream());
+                SOSPFPacket presponse = new SOSPFPacket();
+                presponse.srcProcessIP = rd.processIPAddress;
+                presponse.srcProcessPort = rd.processPortNumber;
+                presponse.srcIP = rd.simulatedIPAddress;
+                presponse.dstIP = packet.srcIP;
+                presponse.sospfType = 0;
 
+                out.writeObject(presponse);
+
+                //Upon recieval confirmation set status of sending router state to TWO WAY.
+                SOSPFPacket response = (SOSPFPacket) in.readObject();
+                if (response.sospfType== 0){
+                  System.out.println("recieved HELLO from " + response.srcIP);
+                  router.ports[portnumber].router2.status = RouterStatus.TWO_WAY;
+                  System.out.println("set "+response.srcIP + " state to TWO_WAY");
+                
+                }
+                in.close();
+                out.close();
+              }
             }
 
 
