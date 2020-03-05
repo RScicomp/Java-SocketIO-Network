@@ -25,6 +25,9 @@ public class LinkStateDatabase {
    * output the shortest path from this router to the destination with the given IP address
    */
   String getShortestPath(String destinationIP) {
+    /**
+     * https://www.geeksforgeeks.org/printing-paths-dijkstras-shortest-path-algorithm/
+     */
     //Get all routers in in Topology
     ArrayList<String> routers = this.getRouters();
     System.out.println("ROUTERS: " + routers.toString());
