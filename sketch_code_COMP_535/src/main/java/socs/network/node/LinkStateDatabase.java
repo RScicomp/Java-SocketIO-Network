@@ -72,8 +72,7 @@ public class LinkStateDatabase {
 			int shortestDistance = Integer.MAX_VALUE; 
 			for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++) 
 			{ 
-				if (!added[vertexIndex] && shortestDistances[vertexIndex] < shortestDistance) 
-				{ 
+				if (!added[vertexIndex] && shortestDistances[vertexIndex] < shortestDistance) { 
 					nearestVertex = vertexIndex; 
 					shortestDistance = shortestDistances[vertexIndex]; 
 				} 
@@ -107,14 +106,11 @@ public class LinkStateDatabase {
 
     // NEED TO ACTUALLY BUILD STRING AND RETURN, ALSO TEST MORE THOUROUGHLLY
     if(currentVertex == srcVertex){
-      System.out.print(routers.get(currentVertex));
+      return routers.get(currentVertex);
     }
     else{
-      System.out.print("->(" + parents[currentVertex][1] + ") " + routers.get(currentVertex));
+      return "->(" + parents[currentVertex][1] + ") " + routers.get(currentVertex);
     }
-    
-    
-    return path;
   } 
 
   //helper function 

@@ -189,6 +189,7 @@ public class ServerHandler implements Runnable {
                 }
                 //Check to see if we have approriate LSAs
                 System.out.println(router.lsd._store);
+                router.lsaUpdate(packet.srcIP);
               }
               
               if(packet.sospfType == 0 ){
