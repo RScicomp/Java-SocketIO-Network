@@ -58,7 +58,7 @@ public class Router {
     System.out.print("hello");
     System.out.println(this.lsd.toString());
     lsd.getShortestPath(destinationIP);
-    
+
   }
 
   /**
@@ -243,7 +243,7 @@ public class Router {
       
     }
     //Perform LSAUpdate once we confirm all are TWO WAY.
-    lsaUpdate();
+    lsaUpdate("All Update");
   }
 
   //Send packets
@@ -262,20 +262,23 @@ public class Router {
   }
 
   //Perform lsaUpdate
-  public void lsaUpdate(){
+  public void lsaUpdate(String exclude){
     //Send packets containing the current lsd to all neighbors
+    
     for (Link link : this.ports){
       if(link!= null){
         //Confirm the links are two way.
         if(link.router2.status == RouterStatus.TWO_WAY){ 
-          SOSPFPacket update = new SOSPFPacket();
-          update.srcProcessIP = rd.processIPAddress;
-          update.srcProcessPort = rd.processPortNumber;
-          update.srcIP = rd.simulatedIPAddress;
-          update.dstIP = link.router2.simulatedIPAddress;
-          update.sospfType = 1;
-          update.lsaArray = new Vector<LSA>(lsd._store.values());
-          sendPacket(update,link.router2);
+          //Do not update to src/initiator of LSAUpdate
+          if(!exclude.equals(link.router2.simulatedIPAddress)){
+            SOSPFPacket update = new SOSPFPacket();
+            update.srcProcessIP = rd.processIPAddress;
+            update.srcProcessPort = rd.processPortNumber;
+            update.srcIP = rd.simulatedIPAddress;
+            update.dstIP = link.router2.simulatedIPAddress;
+            update.sospfType = 1;
+            update.lsaArray = new Vector<LSA>(lsd._store.values());
+            sendPacket(update,link.router2);
         }
       }
     }
