@@ -88,13 +88,15 @@ public class WeightedGraph {
                         int currentKey = heapNodes[destination].distance;
                         if(currentKey>newKey){
                             decreaseKey(minHeap, newKey, destination);
+
                             heapNodes[destination].distance = newKey;
                         }
                     }
                 }
             }
             //print SPT
-            printDijkstra(heapNodes, sourceVertex);
+            //printDijkstra(heapNodes, sourceVertex);
+            minHeap.display();
         }
 
         public void decreaseKey(MinHeap minHeap, int newKey, int vertex){
@@ -109,6 +111,7 @@ public class WeightedGraph {
         }
 
         public void printDijkstra(HeapNode[] resultSet, int sourceVertex){
+
             System.out.println("Dijkstra Algorithm: (Adjacency List + Min Heap)");
             for (int i = 0; i <vertices ; i++) {
                 System.out.println("Source Vertex: " + sourceVertex + " to vertex " +   + i +
