@@ -55,9 +55,8 @@ public class Router {
    * @param destinationIP the ip adderss of the destination simulated router
    */
   private void processDetect(String destinationIP) {
-    System.out.print("hello");
-    System.out.println(this.lsd.toString());
-    lsd.getShortestPath(destinationIP);
+    //System.out.println(this.lsd.toString());
+    System.out.println(lsd.getShortestPath(destinationIP));
 
   }
 
@@ -111,7 +110,7 @@ public class Router {
       //We need to add this to the ports we connect to.
       for(int i=0;i<4;i++){
         if(ports[i] == null){
-          System.out.println("Attaching!");
+          //System.out.println("Attaching!");
           //Create LSA to be inserted into LINKSTATE DATABASE Store. This LSA describes the connection from current router to others.
           LSA lsa = new LSA();
           lsa.linkStateID = rd.simulatedIPAddress;
@@ -120,9 +119,9 @@ public class Router {
           //To ensure that when we send out a packet with lsaArray, it contains the most up to date LSAs. 
           if(lsd._store.containsKey(rd.simulatedIPAddress)){
             LSA previousLSA = (LSA)lsd._store.get(rd.simulatedIPAddress);
-            System.out.println("Updating Sequence number to: " + previousLSA.lsaSeqNumber+1);
+            //System.out.println("Updating Sequence number to: " + previousLSA.lsaSeqNumber+1);
             lsa.lsaSeqNumber = previousLSA.lsaSeqNumber+1;
-            System.out.println("Updating");
+            //System.out.println("Updating");
             lsa.links = lsd._store.get(rd.simulatedIPAddress).links;
           }
 
@@ -130,15 +129,15 @@ public class Router {
           LinkDescription ld = new LinkDescription();
           ld.linkID = attach.simulatedIPAddress;
           ld.portNum = i;
-          System.out.println("PortNum:");
-          System.out.println(ld.portNum);
+          //System.out.println("PortNum:");
+          //System.out.println(ld.portNum);
           ld.tosMetrics = weight;
           lsa.links.add(ld);
 
           //Add the new lsa into the LSD hashmap. at the specified address.
           lsd._store.put(lsa.linkStateID,lsa);
 
-          System.out.println(lsd);
+          //System.out.println(lsd);
           ports[i] = link;
 
           break;
@@ -172,7 +171,7 @@ public class Router {
       listener.start();
     }
     catch(Exception e){
-      System.out.println("Error Starting");
+      //System.out.println("Error Starting");
     }
 
     for (int i = 0; i<4; i++ ){
@@ -233,7 +232,7 @@ public class Router {
 
 
         }catch(Exception e){
-          System.out.println("Error");
+          System.out.println("Error. Not started yet.");
           //e.printStackTrace();
         }
 
@@ -272,17 +271,19 @@ public class Router {
           //Do not update to src/initiator of LSAUpdate
           if(!exclude.equals(link.router2.simulatedIPAddress)){
             SOSPFPacket update = new SOSPFPacket();
-            update.srcProcessIP = rd.processIPAddress;
+            update.srcProcessIP = rd.simulatedIPAddress;
             update.srcProcessPort = rd.processPortNumber;
             update.srcIP = rd.simulatedIPAddress;
             update.dstIP = link.router2.simulatedIPAddress;
             update.sospfType = 1;
             update.lsaArray = new Vector<LSA>(lsd._store.values());
             sendPacket(update,link.router2);
+          }
         }
       }
     }
   }
+  
 
 
   /**

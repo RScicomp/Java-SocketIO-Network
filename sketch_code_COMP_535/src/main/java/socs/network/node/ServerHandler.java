@@ -67,8 +67,41 @@ public class ServerHandler implements Runnable {
                     router.ports[i] = new Link(router.rd,r2);
                     System.out.println("set " + packet.srcIP + " state to INIT");
                     portnumber = i;
+                    /*
+                    if(router.lsd._store.containsKey(rd.simulatedIPAddress)){
+                      LSA previousLSA = (LSA)router.lsd._store.get(rd.simulatedIPAddress);
+                      System.out.println("Updating Sequence number to: " + previousLSA.lsaSeqNumber+1);
+                      previousLSA.lsaSeqNumber = previousLSA.lsaSeqNumber+1;
+                      System.out.println("Updating");
+                      previousLSA.links = router.lsd._store.get(rd.simulatedIPAddress).links;
+                      router.lsd._store.put(rd.simulatedIPAddress,previousLSA);
+                      //router.lsaUpdate("ALL UPDATE");
+                    } */
+/*
+                    LSA newlsa = new LSA();
+                    if(router.lsd._store.containsKey(rd.simulatedIPAddress)){
+                      LSA previousLSA = (LSA)router.lsd._store.get(rd.simulatedIPAddress);
+                      System.out.println("Updating Sequence number to: " + previousLSA.lsaSeqNumber+1);
+                      lsa.lsaSeqNumber = previousLSA.lsaSeqNumber+1;
+                      System.out.println("Updating");
+                      lsa.links = router.lsd._store.get(rd.simulatedIPAddress).links;
+                    }
 
+                    LinkDescription ld = new LinkDescription();
+                    ld.linkID =r2.simulatedIPAddress;
+                    ld.portNum = i;
+                    //int weight -1;
+                    /*
+                    for (link: router.ports){
+                      if(link.router2.equals(r2.simulatedIPAddress)){
+                        weight = 
+                      }
+                    }
+                    ld.tosMetrics = ;
+                    lsa.links.add(ld);
 
+                    //Add the new lsa into the LSD hashmap. at the specified address.
+                    lsd._store.put(lsa.linkStateID,lsa);*/
                     /*
                     //Update LSD 
                     LSA lsa = new LSA();
@@ -164,11 +197,12 @@ public class ServerHandler implements Runnable {
               //Link State Update Occurring
               if(packet.sospfType==1){
                 LSA newlsa = new LSA();
-                System.out.println("Performing LinkState Update");
+                //System.out.println("Performing LinkState Update");
                 //create link
-                System.out.println("LSAARRAY");
+                //System.out.println("LSAARRAY");
 
-                System.out.println(packet.lsaArray);
+                //System.out.println(packet.lsaArray);
+                boolean changed = false;
                 //Upon recieving a packet containing the LSAUpdate: we must look through each LSA and cross check with our lsd database to 
                 //ensure that each and every LSA is up to date. Otherwise, we replace. If not present, we add. 
                 for (LSA recieved: packet.lsaArray){
@@ -178,20 +212,24 @@ public class ServerHandler implements Runnable {
                     router.lsd._store.put(recieved.linkStateID,recieved);
                   }
                   else{
-                    System.out.println("We recieved a new LSA");
-                    System.out.println(router.lsd._store.get(recieved.linkStateID));
+                    //System.out.println("We recieved a new LSA");
+                    //System.out.println(router.lsd._store.get(recieved.linkStateID));
                     //Replace LSA if old. Else ignore it.
-                    if(router.lsd._store.get(recieved.linkStateID).lsaSeqNumber > recieved.lsaSeqNumber){
+                    if(router.lsd._store.get(recieved.linkStateID).lsaSeqNumber < recieved.lsaSeqNumber){
                       router.lsd._store.put(recieved.linkStateID , recieved);
-                      System.out.println("It has replaced an old LSA");
+                      //System.out.println("It has replaced an old LSA");
+                      changed = true;
                     }
                   }
                 }
                 //Check to see if we have approriate LSAs
-                System.out.println(router.lsd._store);
+                //System.out.println(router.lsd._store);
                 //forward Update
-                System.out.println("Excluding:" + packet.srcIP);
-                router.lsaUpdate(packet.srcIP);
+                //System.out.println("Excluding:" + packet.srcIP);
+                if(changed== true){ 
+                  //System.out.println("Calling LSAUPDATE");
+                  router.lsaUpdate(packet.srcIP);
+                }
               }
               
               if(packet.sospfType == 0 ){
@@ -212,7 +250,7 @@ public class ServerHandler implements Runnable {
                   System.out.println("recieved HELLO from " + response.srcIP);
                   router.ports[portnumber].router2.status = RouterStatus.TWO_WAY;
                   System.out.println("set "+response.srcIP + " state to TWO_WAY");
-                
+                  router.lsaUpdate("ALL UPDATE");
                 }
                 in.close();
                 out.close();

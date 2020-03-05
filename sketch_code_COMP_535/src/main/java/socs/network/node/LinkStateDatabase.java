@@ -2,11 +2,10 @@ package socs.network.node;
 
 import socs.network.message.LSA;
 import socs.network.message.LinkDescription;
-import socs.network.node.WeightedGraph.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 
 public class LinkStateDatabase {
 
@@ -26,35 +25,98 @@ public class LinkStateDatabase {
    * output the shortest path from this router to the destination with the given IP address
    */
   String getShortestPath(String destinationIP) {
-    System.out.println("SRC ROUTER: " + this.rd.simulatedIPAddress);
+    /**
+     * https://www.geeksforgeeks.org/printing-paths-dijkstras-shortest-path-algorithm/
+     */
     //Get all routers in in Topology
     ArrayList<String> routers = this.getRouters();
-    System.out.println("ROUTERS: " + routers.toString());
+    //System.out.println("ROUTERS: " + routers.toString());
+    int nVertices = routers.size();
 
-    //create hashmap to map routerId to integer
-    HashMap<String, Integer> posMap = new HashMap<String, Integer>();
-    for(int i = 0; i < routers.size(); i++){
-      posMap.put(routers.get(i), i);
-    }
-
-    //Initialize Graph
-    Graph g = new WeightedGraph.Graph(routers.size());
-
+    int[][] adjacencyMatrix = new int[nVertices][nVertices];
     for (LSA lsa: _store.values()) {
       for (LinkDescription ld : lsa.links) {
         if(!lsa.linkStateID.equals(ld.linkID)){
-          g.addEdge(posMap.get(lsa.linkStateID), posMap.get(ld.linkID), ld.tosMetrics);
+          adjacencyMatrix[routers.indexOf(lsa.linkStateID)][routers.indexOf(ld.linkID)] = ld.tosMetrics;
+          adjacencyMatrix[routers.indexOf(ld.linkID)][routers.indexOf(lsa.linkStateID)] = ld.tosMetrics; 
         }
       }
     }
 
-    g.printGraph();
-    
-    //TODO: run Dijskras on weighted graph
-    g.dijkstra_GetMinDistances(posMap.get(this.rd.simulatedIPAddress));
+    //System.out.println("Adjacency Matrix: ");
+/*
+    for(int i=0; i<nVertices; i++){
+      System.out.println(Arrays.toString(adjacencyMatrix[i]));
+    }*/
 
-    return null;
+    int startVertex = routers.indexOf(this.rd.simulatedIPAddress);
+    
+    int[] shortestDistances = new int[nVertices]; 
+    
+		boolean[] added = new boolean[nVertices]; 
+
+		for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++) { 
+			shortestDistances[vertexIndex] = Integer.MAX_VALUE; 
+			added[vertexIndex] = false; 
+		} 
+		
+		shortestDistances[startVertex] = 0; 
+
+		int[][] parents = new int[nVertices][2]; 
+
+    parents[startVertex][0] = -1; //no parent
+    parents[startVertex][1] = 0; //edge weight to parent
+
+		for (int i = 1; i < nVertices; i++) { 
+
+			int nearestVertex = -1; 
+			int shortestDistance = Integer.MAX_VALUE; 
+			for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++) 
+			{ 
+				if (!added[vertexIndex] && shortestDistances[vertexIndex] < shortestDistance) { 
+					nearestVertex = vertexIndex; 
+					shortestDistance = shortestDistances[vertexIndex]; 
+				} 
+      } 
+      
+			added[nearestVertex] = true; 
+
+			for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++) { 
+				int edgeDistance = adjacencyMatrix[nearestVertex][vertexIndex]; 
+				
+				if (edgeDistance > 0 && ((shortestDistance + edgeDistance) < shortestDistances[vertexIndex])) { 
+          parents[vertexIndex][0] = nearestVertex; 
+          parents[vertexIndex][1] = edgeDistance;
+					shortestDistances[vertexIndex] = shortestDistance + edgeDistance; 
+				} 
+			} 
+		} 
+   // String path =null;
+    String path= getPath(routers.indexOf(destinationIP), startVertex, parents, routers);
+    //System.out.println(path);
+    return(path);
   }
+
+  private static String getPath(int currentVertex, int srcVertex, int[][] parents, ArrayList<String> routers) { 
+    String path = "";
+
+    //System.out.println(parents[srcVertex][0]);
+
+    if (currentVertex == -1) { 
+      return ""; 
+    } 
+    
+    path = path + getPath(parents[currentVertex][0], srcVertex, parents, routers);
+    // NEED TO ACTUALLY BUILD STRING AND RETURN, ALSO TEST MORE THOUROUGHLLY
+    if(currentVertex == srcVertex){
+      //System.out.print(routers.get(currentVertex));
+      return routers.get(currentVertex);
+    }
+    else{
+      //System.out.print( "->(" + parents[currentVertex][1] + ") " + routers.get(currentVertex));
+      return path+" ->(" + parents[currentVertex][1] + ") " + routers.get(currentVertex);
+    } 
+  } 
 
   //helper function 
   ArrayList<String> getRouters() {
@@ -65,7 +127,6 @@ public class LinkStateDatabase {
         routers.add(lsa.linkStateID);
       }
       for (LinkDescription ld : lsa.links) {
-        System.out.println("ld ids: "+ld.linkID);
         if(!routers.contains(ld.linkID)){
           routers.add(ld.linkID);
         }
