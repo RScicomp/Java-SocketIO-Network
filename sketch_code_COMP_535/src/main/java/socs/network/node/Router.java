@@ -105,7 +105,6 @@ public class Router {
         //break;
       }
     }
-
     if(!isAttached){
       //We need to add this to the ports we connect to.
       for(int i=0;i<4;i++){
@@ -144,6 +143,7 @@ public class Router {
         }
       }
     }
+    //System.out.println(ports);
     //allowing for multiple attaches?
     /*
     else{
@@ -182,19 +182,16 @@ public class Router {
         try{
 
           //Send HELLO
-
           Socket client = new Socket(link.router2.processIPAddress, link.router2.processPortNumber);
           OutputStream outToServer = client.getOutputStream();
           ObjectOutputStream out = new ObjectOutputStream(outToServer);
           SOSPFPacket packet = new SOSPFPacket();
-          
           packet.srcProcessIP = rd.processIPAddress;
           //print(packet.srcProcessIP);
           packet.srcProcessPort = rd.processPortNumber;
           packet.srcIP = rd.simulatedIPAddress;
           packet.dstIP = link.router2.simulatedIPAddress;
           packet.sospfType = 0;
-
 
           out.writeObject(packet);
          

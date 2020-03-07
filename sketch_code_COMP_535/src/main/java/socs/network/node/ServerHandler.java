@@ -55,10 +55,10 @@ public class ServerHandler implements Runnable {
                 System.out.println("recieved HELLO from " + packet.srcIP );//once recieved we init
                 for(int i = 0; i < 4; i++){
                   //check if already exists
-                  if(router.ports[i] == null){
-
-                    
+                  //System.out.println("ADDED");
+                  if(router.ports[i] == null ){
                     //From recieved message create router description and assign port from packet
+                    //System.out.println("PORTS:" + router.ports[i]);
                     RouterDescription r2 = new RouterDescription();
                     r2.simulatedIPAddress = packet.srcIP;
                     r2.processIPAddress = packet.srcProcessIP;
@@ -67,128 +67,10 @@ public class ServerHandler implements Runnable {
                     router.ports[i] = new Link(router.rd,r2);
                     System.out.println("set " + packet.srcIP + " state to INIT");
                     portnumber = i;
-                    /*
-                    if(router.lsd._store.containsKey(rd.simulatedIPAddress)){
-                      LSA previousLSA = (LSA)router.lsd._store.get(rd.simulatedIPAddress);
-                      System.out.println("Updating Sequence number to: " + previousLSA.lsaSeqNumber+1);
-                      previousLSA.lsaSeqNumber = previousLSA.lsaSeqNumber+1;
-                      System.out.println("Updating");
-                      previousLSA.links = router.lsd._store.get(rd.simulatedIPAddress).links;
-                      router.lsd._store.put(rd.simulatedIPAddress,previousLSA);
-                      //router.lsaUpdate("ALL UPDATE");
-                    } */
-/*
-                    LSA newlsa = new LSA();
-                    if(router.lsd._store.containsKey(rd.simulatedIPAddress)){
-                      LSA previousLSA = (LSA)router.lsd._store.get(rd.simulatedIPAddress);
-                      System.out.println("Updating Sequence number to: " + previousLSA.lsaSeqNumber+1);
-                      lsa.lsaSeqNumber = previousLSA.lsaSeqNumber+1;
-                      System.out.println("Updating");
-                      lsa.links = router.lsd._store.get(rd.simulatedIPAddress).links;
-                    }
-
-                    LinkDescription ld = new LinkDescription();
-                    ld.linkID =r2.simulatedIPAddress;
-                    ld.portNum = i;
-                    //int weight -1;
-                    /*
-                    for (link: router.ports){
-                      if(link.router2.equals(r2.simulatedIPAddress)){
-                        weight = 
-                      }
-                    }
-                    ld.tosMetrics = ;
-                    lsa.links.add(ld);
-
-                    //Add the new lsa into the LSD hashmap. at the specified address.
-                    lsd._store.put(lsa.linkStateID,lsa);*/
-                    /*
-                    //Update LSD 
-                    LSA lsa = new LSA();
-                    lsa.linkStateID = rd.simulatedIPAddress;
-
-                    //If LSA already exists, update it. Incremenet to sure that we know the version. copy all past links into the newest LSA.
-                    if(router.lsd._store.containsKey(rd.simulatedIPAddress)){
-                      //Loop through the lsaArray from packet.
-                      for ( LSA lsaold1 : packet.lsaArray){
-                        //If sender ip is in the LSAarray (Make sure it is the most up to date)
-                        if(lsaold1.linkstateID.equals(r2.simulatedIPAddress)){
-                          for ( LSA lsastore: router.lsd_.store){
-                            //If present in our LSD
-                            if(lsastore.linkstateID.equals(lsaold1.linkstateID)){
-                              //UPDATE IF sequence number lower
-                              if (lsastore.lsaSeqNumber < lsaold1.lsaSeqNumber){
-                                //Loop through the links 
-                              }
-                              
-                            }
-
-                          }
-                        }
-                      }
-
-                      LSA previousLSA = (LSA)router.lsd._store.get(rd.simulatedIPAddress);
-
-                      lsa.lsaSeqNumber = previousLSA.lsaSeqNumber+1;
-                      System.out.println("Updating");
-                      lsa.links = router.lsd._store.get(rd.simulatedIPAddress).links;
-                    }
-                    else{
-                      //Upon HELLO we must create a LSA. Because this is a HELLO we can send link weight through packet
-                      //Create a Link description. (What we're linking to, the port and the weight)
-                      LinkDescription ld = new LinkDescription();
-                      ld.linkID = r2.simulatedIPAddress;
-                      int weight = 0;
-                      for ( LSA lsaold : packet.lsaArray){
-  
-                        for (LinkDescription linkd: lsaold.links){
-                          //if router 2 in the links of the source router.
-                          if(linkd.linkID.equals(rd.simulatedIPAddress)){
-                            weight = lsaold.links.get(sourceI).tosMetrics;
-                            break;
-                          }
-                        }
-                      }
-                      ld.portNum = portnumber;
-                      ld.tosMetrics = weight;
-                      //lsa.links.add(ld);
-
-
-
-                      //Synchronize Link State Database, retrieving LSD Information.
-                      for (LSA lsaold : packet.lsaArray){
-                        for (LinkDescription linkd: lsaold.links){
-                          LinkDescription ld = new LinkDescription();
-                          //If you encouter yourself
-                          if(linkd.linkID.equals(rd.simulatedIPAddress)){
-                            ld.linkID = router.simulatedIPAddress;
-                            ld.portNum =portnumber;
-                            ld.tosMetrics=weight;
-                            lsa.links.add(ld);
-                          }else{
-                            ld.linkID = r2.simulatedIPAddress;
-                            ld.portNum = portnumber;
-                            ld.tosMetrics = linkd.tosMetrics + weight;
-                            lsa.links.add(ld);
-                          }
-                        }
-                      }
-
-
-                      System.out.println("Recieved LSA");
-                      System.out.println(ld);
-                      //Add the new lsa into the LSD hashmap. at the specified address.
-                      rd.lsd._store.put(lsa.linkStateID,lsa);
-
-
-                      //System.out.println(lsd);
-                    }  
-                    
-
-
-                    */
-
                     break;
+                  }
+                  if(router.ports[i].router2.simulatedIPAddress.equals(packet.srcIP)){
+                    portnumber=i;
                   }
                 }
                 
@@ -196,7 +78,7 @@ public class ServerHandler implements Runnable {
               }
               //Link State Update Occurring
               if(packet.sospfType==1){
-                LSA newlsa = new LSA();
+                //LSA newlsa = new LSA();
                 //System.out.println("Performing LinkState Update");
                 //create link
                 //System.out.println("LSAARRAY");
