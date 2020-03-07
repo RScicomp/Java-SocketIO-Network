@@ -1,12 +1,8 @@
 package socs.network.node;
 
-import socs.network.util.Configuration;
 import socs.network.message.SOSPFPacket;
 import socs.network.message.LSA;
-import socs.network.message.LinkDescription;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
@@ -14,7 +10,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import socs.network.message.SOSPFPacket;
 
 public class ServerHandler implements Runnable {
     private RouterDescription rd;
@@ -33,11 +28,8 @@ public class ServerHandler implements Runnable {
       
         while(true){
           try{
-
-
             Socket server = serverSocket.accept();
-          
-
+        
             //listen
             InputStream inFromServer = server.getInputStream(); 
             ObjectInputStream in = new ObjectInputStream(inFromServer);
@@ -55,10 +47,8 @@ public class ServerHandler implements Runnable {
                 System.out.println("recieved HELLO from " + packet.srcIP );//once recieved we init
                 for(int i = 0; i < 4; i++){
                   //check if already exists
-                  //System.out.println("ADDED");
                   if(router.ports[i] == null ){
                     //From recieved message create router description and assign port from packet
-                    //System.out.println("PORTS:" + router.ports[i]);
                     RouterDescription r2 = new RouterDescription();
                     r2.simulatedIPAddress = packet.srcIP;
                     r2.processIPAddress = packet.srcProcessIP;
@@ -73,17 +63,9 @@ public class ServerHandler implements Runnable {
                     portnumber=i;
                   }
                 }
-                
-
               }
               //Link State Update Occurring
               if(packet.sospfType==1){
-                //LSA newlsa = new LSA();
-                //System.out.println("Performing LinkState Update");
-                //create link
-                //System.out.println("LSAARRAY");
-
-                //System.out.println(packet.lsaArray);
                 boolean changed = false;
                 //Upon recieving a packet containing the LSAUpdate: we must look through each LSA and cross check with our lsd database to 
                 //ensure that each and every LSA is up to date. Otherwise, we replace. If not present, we add. 
@@ -94,22 +76,16 @@ public class ServerHandler implements Runnable {
                     router.lsd._store.put(recieved.linkStateID,recieved);
                   }
                   else{
-                    //System.out.println("We recieved a new LSA");
-                    //System.out.println(router.lsd._store.get(recieved.linkStateID));
                     //Replace LSA if old. Else ignore it.
                     if(router.lsd._store.get(recieved.linkStateID).lsaSeqNumber < recieved.lsaSeqNumber){
                       router.lsd._store.put(recieved.linkStateID , recieved);
-                      //System.out.println("It has replaced an old LSA");
                       changed = true;
                     }
                   }
                 }
                 //Check to see if we have approriate LSAs
-                //System.out.println(router.lsd._store);
                 //forward Update
-                //System.out.println("Excluding:" + packet.srcIP);
                 if(changed== true){ 
-                  //System.out.println("Calling LSAUPDATE");
                   router.lsaUpdate(packet.srcIP);
                 }
               }

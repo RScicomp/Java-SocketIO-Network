@@ -4,7 +4,6 @@ import socs.network.message.LSA;
 import socs.network.message.LinkDescription;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class LinkStateDatabase {
@@ -26,7 +25,7 @@ public class LinkStateDatabase {
    */
   String getShortestPath(String destinationIP) {
     /**
-     * https://www.geeksforgeeks.org/printing-paths-dijkstras-shortest-path-algorithm/
+     * Dijkstras algo taken from: https://www.geeksforgeeks.org/printing-paths-dijkstras-shortest-path-algorithm/
      */
     //Get all routers in in Topology
     ArrayList<String> routers = this.getRouters();
@@ -42,12 +41,6 @@ public class LinkStateDatabase {
         }
       }
     }
-
-    //System.out.println("Adjacency Matrix: ");
-/*
-    for(int i=0; i<nVertices; i++){
-      System.out.println(Arrays.toString(adjacencyMatrix[i]));
-    }*/
 
     int startVertex = routers.indexOf(this.rd.simulatedIPAddress);
     
@@ -91,29 +84,23 @@ public class LinkStateDatabase {
 				} 
 			} 
 		} 
-   // String path =null;
+
     String path= getPath(routers.indexOf(destinationIP), startVertex, parents, routers);
-    //System.out.println(path);
     return(path);
   }
 
   private static String getPath(int currentVertex, int srcVertex, int[][] parents, ArrayList<String> routers) { 
     String path = "";
 
-    //System.out.println(parents[srcVertex][0]);
-
     if (currentVertex == -1) { 
       return ""; 
     } 
     
     path = path + getPath(parents[currentVertex][0], srcVertex, parents, routers);
-    // NEED TO ACTUALLY BUILD STRING AND RETURN, ALSO TEST MORE THOUROUGHLLY
     if(currentVertex == srcVertex){
-      //System.out.print(routers.get(currentVertex));
       return routers.get(currentVertex);
     }
     else{
-      //System.out.print( "->(" + parents[currentVertex][1] + ") " + routers.get(currentVertex));
       return path+" ->(" + parents[currentVertex][1] + ") " + routers.get(currentVertex);
     } 
   } 
