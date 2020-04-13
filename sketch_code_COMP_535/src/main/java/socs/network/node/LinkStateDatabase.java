@@ -29,10 +29,16 @@ public class LinkStateDatabase {
      */
     //Get all routers in in Topology
     ArrayList<String> routers = this.getRouters();
-    //System.out.println("ROUTERS: " + routers.toString());
+    System.out.println("ROUTERS: " + routers.toString());
     int nVertices = routers.size();
 
     int[][] adjacencyMatrix = new int[nVertices][nVertices];
+    for(int i = 0; i<nVertices; i++){
+      for(int j = 0; j<nVertices; j++){
+        adjacencyMatrix[i][j] = -1;
+      }
+    }
+    printadj(adjacencyMatrix);
     for (LSA lsa: _store.values()) {
       for (LinkDescription ld : lsa.links) {
         if(!lsa.linkStateID.equals(ld.linkID)){
@@ -41,6 +47,7 @@ public class LinkStateDatabase {
         }
       }
     }
+
     printadj(adjacencyMatrix);
 
     int startVertex = routers.indexOf(this.rd.simulatedIPAddress);
@@ -56,10 +63,17 @@ public class LinkStateDatabase {
 		
 		shortestDistances[startVertex] = 0; 
 
-		int[][] parents = new int[nVertices][2]; 
+    int[][] parents = new int[nVertices][2]; 
+    
+    for(int i = 0; i<nVertices; i++){
+      for(int j = 0; j<2; j++){
+        parents[i][0] = -1;
+        parents[i][1] = -1;
+      }
+    }
 
     parents[startVertex][0] = -1; //no parent
-    parents[startVertex][1] = 0; //edge weight to parent
+    parents[startVertex][1] = -1; //edge weight to parent
 
 		for (int i = 1; i < nVertices; i++) { 
 
@@ -90,19 +104,30 @@ public class LinkStateDatabase {
     return(path);
   }
 
-  private static String getPath(int currentVertex, int srcVertex, int[][] parents, ArrayList<String> routers) { 
-    String path = "";
-
+  private static String getPath(int currentVertex, int srcVertex, int[][] parents, ArrayList<String> routers) {
     if (currentVertex == -1) { 
       return ""; 
     } 
-    
+    // System.out.println("currentVertex: " + currentVertex);
+    // System.out.println("srcVertex: " + srcVertex);
+    // System.out.println("parentVertex: " + parents[currentVertex][0]);
+    // System.out.println("weightToParent: " + parents[currentVertex][1]);
+    // System.out.println("routers: " + routers.toString());
+
+    String path = "";
+
     path = path + getPath(parents[currentVertex][0], srcVertex, parents, routers);
     if(currentVertex == srcVertex){
       return routers.get(currentVertex);
     }
     else{
-      return path+" ->(" + parents[currentVertex][1] + ") " + routers.get(currentVertex);
+      if(parents[currentVertex][1] != -1){
+        return path+" ->(" + parents[currentVertex][1] + ") " + routers.get(currentVertex);
+      }
+      else{
+        return "NO PATH";
+      }
+      
     } 
   } 
 

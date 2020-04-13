@@ -58,6 +58,14 @@ public class Router {
   private void processDetect(String destinationIP) {
     //System.out.println(this.lsd.toString());
     System.out.println("Detection LSD: " + lsd.toString());
+    for(int i = 0; i < 4; i++){
+      if(this.ports[i] != null){
+        System.out.println("LINK " + i);
+        System.out.println(ports[i].router1.simulatedIPAddress);
+        System.out.println(ports[i].router2.simulatedIPAddress);
+      }
+    }
+    //System.out.println(this.ports[1].router1.simulatedIPAddress);
     System.out.println(lsd.getShortestPath(destinationIP));
 
   }
@@ -353,16 +361,16 @@ public class Router {
   }
   public void lsaUpdateDisconnect(String exclude, Link[] oldports){
     //Send packets containing the current lsd to all neighbors
-    System.out.println("SENDING"); 
+    //System.out.println("SENDING"); 
     for (Link link : oldports){
       if(link!= null){
         //Confirm the links are two way.
-        System.out.println("SENDING");
+        //System.out.println("SENDING");
         if(link.router2.status == RouterStatus.TWO_WAY){
-          System.out.println("SENDING"); 
+          //System.out.println("SENDING"); 
           //Do not update to src/initiator of LSAUpdate
           if(!exclude.equals(link.router2.simulatedIPAddress)){
-            System.out.println("SENDING");
+            //System.out.println("SENDING");
             SOSPFPacket update = new SOSPFPacket();
             update.srcProcessIP = rd.simulatedIPAddress;
             update.srcProcessPort = rd.processPortNumber;
@@ -411,6 +419,14 @@ public class Router {
    * disconnect with all neighbors and quit the program
    */
   private void processQuit() {
+    for(short s = 0; s<4; s++){
+      int i = s;
+      if(ports[i] != null){
+        processDisconnect(s);
+      }
+    }
+
+    System.exit(1);
 
   }
 
