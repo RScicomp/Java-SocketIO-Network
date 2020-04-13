@@ -2,6 +2,7 @@ package socs.network.node;
 
 import socs.network.message.SOSPFPacket;
 import socs.network.message.LSA;
+import socs.network.message.LinkDescription;
 
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.LinkedList;
 
 public class ServerHandler implements Runnable {
     private RouterDescription rd;
@@ -64,6 +66,63 @@ public class ServerHandler implements Runnable {
                   }
                 }
               }
+              if(packet.sospfType==2){
+                System.out.println("We're Looking at LSD1: " + router.lsd.toString());
+                boolean changed = false;
+                //Upon recieving a packet containing the LSAUpdate: we must look through each LSA and cross check with our lsd database to 
+                //ensure that each and every LSA is up to date. Otherwise, we replace. If not present, we add. 
+                LSA changedLSA = null;
+                System.out.println("HEY");
+                  Link[] oldports = new Link[4];
+                  for (int i = 0; i < 4; i++){
+                    if(router.ports[i]!= null){
+                      RouterDescription router1= router.ports[i].router1;
+                      RouterDescription router2= router.ports[i].router2;
+                      Link old = new Link(router1,router2);
+                      oldports[i] = old;
+                    }
+                  }
+                for (LSA recieved: packet.lsaArray){
+                  //System.out.println("Recieved: "+ recieved.toString());
+                  //System.out.println("Seq numbers recieved: " + recieved.lsaSeqNumber + "our numbers: " + router.lsd._store.get(recieved.linkStateID).lsaSeqNumber);
+                  //IF LSA not in already, put it in. 
+                  if(router.lsd._store.get(recieved.linkStateID)==null){
+                    router.lsd._store.put(recieved.linkStateID,recieved);
+                  }
+                  else{
+                    //Check sender's LSA and our version of senders LSAs first. Update
+                    
+                    
+                    //Replace our LSAs from sender if old. Else ignore it.
+                    if(router.lsd._store.get(recieved.linkStateID).lsaSeqNumber <= recieved.lsaSeqNumber){
+                      System.out.println("Updated: " +router.lsd._store.get(recieved.linkStateID) + " With: ");
+                      router.lsd._store.put(recieved.linkStateID , recieved);
+                      System.out.println(router.lsd._store.get(recieved.linkStateID));
+                      changedLSA=recieved;
+                      changed = true;
+                      //Update ports
+                      for (int i = 0; i < this.router.ports.length;i++){
+                        if(this.router.ports[i]!= null){
+                          if(this.router.ports[i].router2.simulatedIPAddress.equals(changedLSA.linkStateID)){
+                            System.out.println("REMOVED!");
+                            this.router.ports[i]=null;
+                          }
+                        }
+                      }
+
+                    }
+                  }
+                   
+                }
+
+                //Check to see if we have approriate LSAs
+                //forward Update
+                //if(changed == true){ 
+                  //router.resetLSD();
+                  //System.out.println("New LSD: " + router.lsd);
+                 router.lsaUpdateDisconnect(packet.srcIP,oldports);
+                //} 
+              }
               //Link State Update Occurring
               if(packet.sospfType==1){
                 boolean changed = false;
@@ -78,6 +137,7 @@ public class ServerHandler implements Runnable {
                   else{
                     //Replace LSA if old. Else ignore it.
                     if(router.lsd._store.get(recieved.linkStateID).lsaSeqNumber < recieved.lsaSeqNumber){
+                      System.out.println("UPDATING");
                       router.lsd._store.put(recieved.linkStateID , recieved);
                       changed = true;
                     }
@@ -85,9 +145,9 @@ public class ServerHandler implements Runnable {
                 }
                 //Check to see if we have approriate LSAs
                 //forward Update
-                if(changed== true){ 
-                  router.lsaUpdate(packet.srcIP);
-                }
+                //if(changed== true){ 
+                router.lsaUpdate(packet.srcIP);
+                //}
               }
               
               if(packet.sospfType == 0 ){

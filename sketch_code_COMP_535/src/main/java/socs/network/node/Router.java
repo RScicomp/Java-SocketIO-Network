@@ -21,6 +21,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.HashMap;
 
 public class Router {
 
@@ -56,8 +57,18 @@ public class Router {
    */
   private void processDetect(String destinationIP) {
     //System.out.println(this.lsd.toString());
+    System.out.println("Detection LSD: " + lsd.toString());
     System.out.println(lsd.getShortestPath(destinationIP));
 
+  }
+  public void resetLSD(){
+    LinkStateDatabase newlsd = new LinkStateDatabase(rd);
+    HashMap<String,LSA> newstore = new HashMap<String,LSA>();
+    for (String key : lsd._store.keySet()){
+      newstore.put(key,lsd._store.get(key));
+    }
+    newlsd._store=newstore;
+    this.lsd=newlsd;
   }
 
   /**
@@ -67,7 +78,63 @@ public class Router {
    * @param portNumber the port number which the link attaches at
    */
   private void processDisconnect(short portNumber) {
+    if(portNumber >= 0 && portNumber < 4){
+      RouterDescription router1old= ports[portNumber].router1;
+      RouterDescription router2old= ports[portNumber].router2;
+      Link oldremove = new Link(router1old,router2old);
+      Link linktoremove= oldremove;
 
+      Link[] oldports = new Link[4];
+      System.out.println("Here");
+
+      //Remember old ports
+      for (int i = 0; i < 4; i++){
+        if(ports[i] != null){
+          RouterDescription router1= ports[i].router1;
+          RouterDescription router2= ports[i].router2;
+          Link old = new Link(router1,router2);
+          oldports[i] = old;
+        }
+      }
+      System.out.println("Link to remove: " + linktoremove.router2.simulatedIPAddress);
+
+      if(linktoremove.router2 != null){
+        System.out.println("Here");
+        ports[portNumber]=null;
+        LSA lsa = lsd._store.get(rd.simulatedIPAddress);
+        System.out.println("LSD1: " + lsd.toString());
+
+        for (LinkDescription ld : lsa.links) {
+          System.out.println("Checking: " +ld.toString());
+          if (ld.linkID.equals(linktoremove.router2.simulatedIPAddress)) {
+            lsa.links.remove(ld);
+            lsa.lsaSeqNumber += 1;
+            lsd._store.put(lsa.linkStateID,lsa);
+            System.out.println("LSD2: " + lsd.toString());
+            break;
+          }
+        }
+        LSA lsa2 = lsd._store.get(linktoremove.router2.simulatedIPAddress);
+        System.out.println("LSA3: " + lsa2.toString());
+
+        for (LinkDescription ld : lsa2.links) {
+          System.out.println("Checking: " +ld.toString());
+          if (ld.linkID.equals(linktoremove.router1.simulatedIPAddress)) {
+            lsa2.links.remove(ld);
+            lsa2.lsaSeqNumber += 1;
+            lsd._store.put(lsa.linkStateID,lsa);
+            System.out.println("LSD4: " + lsd.toString());
+            break;
+          }
+          
+        }
+
+
+      }
+      //resetLSD();
+      
+      lsaUpdateDisconnect("All Update",oldports);
+    } 
   }
 
   /**
@@ -274,6 +341,35 @@ public class Router {
             update.dstIP = link.router2.simulatedIPAddress;
             update.sospfType = 1;
             update.lsaArray = new Vector<LSA>(lsd._store.values());
+            /*
+            for(int i = 0; i < update.lsaArray.size();i++){
+              System.out.println("LSAs:" + update.lsaArray.get(i).toString());
+            }*/
+            sendPacket(update,link.router2);
+          }
+        }
+      }
+    }
+  }
+  public void lsaUpdateDisconnect(String exclude, Link[] oldports){
+    //Send packets containing the current lsd to all neighbors
+    System.out.println("SENDING"); 
+    for (Link link : oldports){
+      if(link!= null){
+        //Confirm the links are two way.
+        System.out.println("SENDING");
+        if(link.router2.status == RouterStatus.TWO_WAY){
+          System.out.println("SENDING"); 
+          //Do not update to src/initiator of LSAUpdate
+          if(!exclude.equals(link.router2.simulatedIPAddress)){
+            System.out.println("SENDING");
+            SOSPFPacket update = new SOSPFPacket();
+            update.srcProcessIP = rd.simulatedIPAddress;
+            update.srcProcessPort = rd.processPortNumber;
+            update.srcIP = rd.simulatedIPAddress;
+            update.dstIP = link.router2.simulatedIPAddress;
+            update.sospfType = 2;
+            update.lsaArray = new Vector<LSA>(lsd._store.values());
             sendPacket(update,link.router2);
           }
         }
@@ -290,9 +386,9 @@ public class Router {
    * <p/>
    * This command does trigger the link database synchronization
    */
-  private void processConnect(String processIP, short processPort,
-                              String simulatedIP, short weight) {
-
+  private void processConnect(String processIP, short processPort, String simulatedIP, short weight) {
+    processAttach(processIP, processPort, simulatedIP, weight);
+    processStart();
   }
 
   /**
@@ -340,8 +436,10 @@ public class Router {
           processAttach(cmdLine[1], Short.parseShort(cmdLine[2]),
                   cmdLine[3], Short.parseShort(cmdLine[4]));
         } else if (command.equals("start")) {
+          //System.out.println("CONNECTING");
           processStart();
-        } else if (command.equals("connect ")) {
+        } else if (command.startsWith("connect ")) {
+          //System.out.println("CONNECTING");
           String[] cmdLine = command.split(" ");
           processConnect(cmdLine[1], Short.parseShort(cmdLine[2]),
                   cmdLine[3], Short.parseShort(cmdLine[4]));
@@ -350,6 +448,7 @@ public class Router {
           processNeighbors();
         } else {
           //invalid command
+          System.out.println("INVALID COMMAND");
           break;
         }
         System.out.print(">> ");

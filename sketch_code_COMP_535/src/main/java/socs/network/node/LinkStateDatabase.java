@@ -41,6 +41,7 @@ public class LinkStateDatabase {
         }
       }
     }
+    printadj(adjacencyMatrix);
 
     int startVertex = routers.indexOf(this.rd.simulatedIPAddress);
     
@@ -148,6 +149,14 @@ public class LinkStateDatabase {
       sb.append("\n");
     }
     return sb.toString();
+  }
+  public void printadj(int[][] adj){
+    for (int i = 0; i < adj.length;i++){
+      for(int j = 0; j < adj[i].length;j++){
+        System.out.print(adj[i][j]);
+      }
+      System.out.println("");
+    }
   }
 
 }
