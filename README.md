@@ -1,5 +1,5 @@
 # Networks_Assignments
-
+Note, our detect will not work if we have -1 as the weight for links.
 To Run: 
 java -jar target/COMP535-1.0-SNAPSHOT-jar-with-dependencies.jar conf/router1.conf
 
