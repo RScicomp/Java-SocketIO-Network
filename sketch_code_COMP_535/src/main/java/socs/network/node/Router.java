@@ -93,7 +93,7 @@ public class Router {
       Link linktoremove= oldremove;
 
       Link[] oldports = new Link[4];
-      System.out.println("Here");
+      //System.out.println("Here");
 
       //Remember old ports
       for (int i = 0; i < 4; i++){
@@ -104,34 +104,34 @@ public class Router {
           oldports[i] = old;
         }
       }
-      System.out.println("Link to remove: " + linktoremove.router2.simulatedIPAddress);
+      //System.out.println("Link to remove: " + linktoremove.router2.simulatedIPAddress);
 
       if(linktoremove.router2 != null){
-        System.out.println("Here");
+        //System.out.println("Here");
         ports[portNumber]=null;
         LSA lsa = lsd._store.get(rd.simulatedIPAddress);
-        System.out.println("LSD1: " + lsd.toString());
+        //System.out.println("LSD1: " + lsd.toString());
 
         for (LinkDescription ld : lsa.links) {
-          System.out.println("Checking: " +ld.toString());
+          //System.out.println("Checking: " +ld.toString());
           if (ld.linkID.equals(linktoremove.router2.simulatedIPAddress)) {
             lsa.links.remove(ld);
             lsa.lsaSeqNumber += 1;
             lsd._store.put(lsa.linkStateID,lsa);
-            System.out.println("LSD2: " + lsd.toString());
+            //System.out.println("LSD2: " + lsd.toString());
             break;
           }
         }
         LSA lsa2 = lsd._store.get(linktoremove.router2.simulatedIPAddress);
-        System.out.println("LSA3: " + lsa2.toString());
+        //System.out.println("LSA3: " + lsa2.toString());
 
         for (LinkDescription ld : lsa2.links) {
-          System.out.println("Checking: " +ld.toString());
+          //System.out.println("Checking: " +ld.toString());
           if (ld.linkID.equals(linktoremove.router1.simulatedIPAddress)) {
             lsa2.links.remove(ld);
             lsa2.lsaSeqNumber += 1;
             lsd._store.put(lsa.linkStateID,lsa);
-            System.out.println("LSD4: " + lsd.toString());
+            //System.out.println("LSD4: " + lsd.toString());
             break;
           }
           

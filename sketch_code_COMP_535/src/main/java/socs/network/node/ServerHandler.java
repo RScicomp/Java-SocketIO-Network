@@ -72,7 +72,7 @@ public class ServerHandler implements Runnable {
                 //Upon recieving a packet containing the LSAUpdate: we must look through each LSA and cross check with our lsd database to 
                 //ensure that each and every LSA is up to date. Otherwise, we replace. If not present, we add. 
                 LSA changedLSA = null;
-                System.out.println("HEY");
+                //System.out.println("HEY");
                   Link[] oldports = new Link[4];
                   for (int i = 0; i < 4; i++){
                     if(router.ports[i]!= null){
@@ -95,7 +95,7 @@ public class ServerHandler implements Runnable {
                     
                     //Replace our LSAs from sender if old. Else ignore it.
                     if(router.lsd._store.get(recieved.linkStateID).lsaSeqNumber <= recieved.lsaSeqNumber){
-                      System.out.println("Updated: " +router.lsd._store.get(recieved.linkStateID) + " With: ");
+                      //System.out.println("Updated: " +router.lsd._store.get(recieved.linkStateID) + " With: ");
                       router.lsd._store.put(recieved.linkStateID , recieved);
                       System.out.println(router.lsd._store.get(recieved.linkStateID));
                       changedLSA=recieved;
@@ -104,7 +104,7 @@ public class ServerHandler implements Runnable {
                       for (int i = 0; i < this.router.ports.length;i++){
                         if(this.router.ports[i]!= null){
                           if(this.router.ports[i].router2.simulatedIPAddress.equals(changedLSA.linkStateID)){
-                            System.out.println("REMOVED!");
+                            //System.out.println("REMOVED!");
                             this.router.ports[i]=null;
                           }
                         }

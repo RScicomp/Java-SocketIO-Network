@@ -29,7 +29,7 @@ public class LinkStateDatabase {
      */
     //Get all routers in in Topology
     ArrayList<String> routers = this.getRouters();
-    System.out.println("ROUTERS: " + routers.toString());
+    //System.out.println("ROUTERS: " + routers.toString());
     int nVertices = routers.size();
 
     int[][] adjacencyMatrix = new int[nVertices][nVertices];
@@ -38,7 +38,6 @@ public class LinkStateDatabase {
         adjacencyMatrix[i][j] = -1;
       }
     }
-    printadj(adjacencyMatrix);
     for (LSA lsa: _store.values()) {
       for (LinkDescription ld : lsa.links) {
         if(!lsa.linkStateID.equals(ld.linkID)){
@@ -48,7 +47,7 @@ public class LinkStateDatabase {
       }
     }
 
-    printadj(adjacencyMatrix);
+    //printadj(adjacencyMatrix);
 
     int startVertex = routers.indexOf(this.rd.simulatedIPAddress);
     
