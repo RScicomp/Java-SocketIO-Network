@@ -1,4 +1,4 @@
-# Networks_Assignments
+# Networks
 An application to communicate between simulated Routers using socketio.
 In order to set JAVA_HOME :
 
