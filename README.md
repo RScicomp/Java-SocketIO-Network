@@ -1,5 +1,5 @@
 # Networks_Assignments
-
+An application to communicate between simulated Routers using socketio.
 In order to set JAVA_HOME :
 
 open -e .bash_profile and fill in the following with your path
