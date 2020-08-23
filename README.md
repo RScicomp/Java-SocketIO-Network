@@ -1,5 +1,7 @@
 # Networks
 This project simulates a network using java's socketio. We set up a link database, and we forward packets using Djikstras Shortest Path algorithm.
+
+## Features
 <img src="Packet Forwarding Example.png" />
 <img src="Shortest Path.png" />
 
