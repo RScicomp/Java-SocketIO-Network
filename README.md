@@ -5,7 +5,7 @@ This project simulates a network using java's socketio. In the terminal we can c
 Router 1 Upon Start:
 <img src="Packet Fowarding Router 2.png" />
 
-Router 2 Upon Start:
+Router 2 Upon established Link:
 <img src="Packet Fowarding .png" />
 
 Getting Shortest Path Between Routers 192.168.1.2 to 192.168.1.6
