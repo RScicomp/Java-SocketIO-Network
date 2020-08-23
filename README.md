@@ -8,7 +8,7 @@ Router 1 Upon Start:
 Router 2 Upon Start:
 <img src="Packet Fowarding Router 2.png" />
 
-Getting Shortest Path:
+Getting Shortest Path Between Routers 192.168.1.2 to 192.168.1.6
 <img src="Shortest Path.png" />
 
 ## Set up
