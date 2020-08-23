@@ -2,10 +2,10 @@
 This project simulates a network using java's socketio. In the terminal we can create links between routers and assign weights to the links. We set up a link database, and we forward packets using Djikstras Shortest Path algorithm.
 
 ## Features
-Router 192.168.1.2 Upon Start:
+Router 192.168.1.2 upon establishing link to Router 192.168.1.3:
 <img src="Packet Fowarding Router 2.png" />
 
-Router 192.168.1.3 Upon established Link:
+Router 192.168.1.3 upon established Link:
 <img src="Packet Fowarding .png" />
 
 Getting Shortest Path Between Routers 192.168.1.2 to 192.168.1.6
