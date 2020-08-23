@@ -1,5 +1,5 @@
 # Networks
-This project simulates a network using java's socketio. We set up a link database, and we forward packets using Djikstras Shortest Path algorithm.
+This project simulates a network using java's socketio. In the terminal we can create links between routers and assign weights to the links. We set up a link database, and we forward packets using Djikstras Shortest Path algorithm.
 
 ## Features
 Router 1 Upon Start:
