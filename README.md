@@ -1,9 +1,11 @@
-# Networks
+## Networks
 Simulating a network. This program forwards packets using Djikstras Shortest Path algorithm.
 
 An application to communicate between simulated Routers using socketio.
 In order to set JAVA_HOME :
 
+
+# Set up
 open -e .bash_profile and fill in the following with your path
 
 #Maven
